@@ -1,0 +1,2 @@
+{"ts": "2026-06-09T11:07:48.077999+07:00", "tool": "chatgpt", "event": "ManualLog", "entry_id": "manual-20260609-110748", "model": "chatgpt", "repo": "C2-App-038", "branch": "lamnd", "commit": "1b2bfbb", "student": "you@example.com", "prompt": "<what you did>", "response_summary": ""}
+{"ts": "2026-06-16T11:07:00.616431+07:00", "tool": "chatgpt", "event": "ManualLog", "entry_id": "manual-20260616-110700", "model": "chatgpt", "repo": "C2-App-038", "branch": "lamnd", "commit": "1b2bfbb", "student": "you@example.com", "prompt": "kiem tra log hook", "response_summary": ""}
