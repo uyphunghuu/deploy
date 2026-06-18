@@ -1,0 +1,9 @@
+arize-phoenix>=4.0.0
+arize-phoenix-evals
+openinference-instrumentation-openai
+openai
+python-dotenv
+pandas
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-exporter-otlp
