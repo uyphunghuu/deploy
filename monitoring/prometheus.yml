@@ -1,0 +1,29 @@
+global:
+  scrape_interval:     15s   # Scrape every 15 seconds
+  evaluation_interval: 15s   # Evaluate rules every 15 seconds
+  scrape_timeout:      10s
+
+# ── Scrape Configs ────────────────────────────────────────────────────────────
+scrape_configs:
+
+  # SlabAI Backend API — custom business metrics
+  # Exposes: api_requests_total, api_request_latency_seconds, guardrail_blocks_total
+  - job_name: "slabai-backend"
+    static_configs:
+      - targets: ["host.docker.internal:8000"]
+    metrics_path: "/api/metrics"
+    scrape_interval: 10s
+
+  # Arize Phoenix — LLM tracing server (if running locally)
+  # Note: Phoenix doesn't natively expose Prometheus metrics yet;
+  # this is a placeholder for when you add a custom exporter.
+  - job_name: "arize-phoenix"
+    static_configs:
+      - targets: ["host.docker.internal:6006"]
+    metrics_path: "/metrics"
+    scrape_interval: 30s
+
+  # Prometheus itself — self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]

@@ -1,0 +1,127 @@
+version: "3.8"
+
+# ══════════════════════════════════════════════════════════════════
+# SlabAI Monitoring Stack
+#
+# Services:
+#   langfuse-server  — LLM-native observability (traces, evals, costs)
+#   langfuse-db      — PostgreSQL for Langfuse
+#   langfuse-redis   — Redis for Langfuse caching
+#   prometheus       — Metrics scraping from backend /api/metrics
+#   grafana          — Dashboards for system-level metrics
+#
+# Usage:
+#   docker-compose -f monitoring/docker-compose.yml up -d
+#
+# Access:
+#   Langfuse  →  http://localhost:3001
+#   Prometheus →  http://localhost:9090
+#   Grafana   →  http://localhost:3002  (admin / admin)
+# ══════════════════════════════════════════════════════════════════
+
+services:
+
+  # ── Langfuse PostgreSQL Database ─────────────────────────────────
+  langfuse-db:
+    image: postgres:16-alpine
+    container_name: langfuse-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: langfuse_secret
+      POSTGRES_DB: langfuse
+    volumes:
+      - langfuse_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - monitoring
+
+  # ── Langfuse Redis Cache ─────────────────────────────────────────
+  langfuse-redis:
+    image: redis:7-alpine
+    container_name: langfuse-redis
+    restart: unless-stopped
+    command: redis-server --requirepass langfuse_redis_secret
+    volumes:
+      - langfuse_redis_data:/data
+    networks:
+      - monitoring
+
+  # ── Langfuse Server (LLM Observability) ─────────────────────────
+  langfuse-server:
+    image: langfuse/langfuse:latest
+    container_name: langfuse-server
+    restart: unless-stopped
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+      langfuse-redis:
+        condition: service_started
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: postgresql://langfuse:langfuse_secret@langfuse-db:5432/langfuse
+      REDIS_CONNECTION_STRING: redis://:langfuse_redis_secret@langfuse-redis:6379
+      NEXTAUTH_URL: http://localhost:3001
+      NEXTAUTH_SECRET: your_nextauth_secret_change_me
+      SALT: your_salt_change_me
+      TELEMETRY_ENABLED: "false"
+      LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES: "true"
+    networks:
+      - monitoring
+
+  # ── Prometheus (Metrics Scraping) ────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--storage.tsdb.retention.time=15d"
+    networks:
+      - monitoring
+
+  # ── Grafana (Dashboards) ─────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    ports:
+      - "3002:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - monitoring
+
+# ── Named Volumes ────────────────────────────────────────────────
+volumes:
+  langfuse_postgres_data:
+  langfuse_redis_data:
+  prometheus_data:
+  grafana_data:
+
+# ── Network ──────────────────────────────────────────────────────
+networks:
+  monitoring:
+    driver: bridge
