@@ -7,3 +7,4 @@ pandas
 opentelemetry-api
 opentelemetry-sdk
 opentelemetry-exporter-otlp
+mlflow>=2.14.0
