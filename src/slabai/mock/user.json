@@ -1,0 +1,12 @@
+{
+  "id": "usr_demo",
+  "firstName": "Lâm",
+  "lastName": "Demo",
+  "email": "demo@slabai.app",
+  "dateOfBirth": "2000-01-01",
+  "gender": "prefer-not-to-say",
+  "heightCm": 170,
+  "weightKg": 65,
+  "primarySport": "running",
+  "avatarUrl": null
+}

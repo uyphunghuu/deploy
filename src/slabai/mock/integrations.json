@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "provider": "garmin",
+      "status": "connected",
+      "permissions": [
+        "Import Workouts",
+        "Export Health Data"
+      ],
+      "lastActivityAt": null
+    },
+    {
+      "provider": "strava",
+      "status": "connected",
+      "permissions": [
+        "Read Activities",
+        "Write Activities"
+      ],
+      "lastActivityAt": "2026-06-23T08:00:00+07:00"
+    },
+    {
+      "provider": "coros",
+      "status": "not-connected",
+      "permissions": [],
+      "lastActivityAt": null
+    }
+  ]
+}

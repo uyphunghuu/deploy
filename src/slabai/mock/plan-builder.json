@@ -1,0 +1,17 @@
+{
+  "sport": "running",
+  "goalMode": "fitness",
+  "races": [],
+  "fitnessGoal": {
+    "focus": "5k",
+    "durationWeeks": 6
+  },
+  "volume": "low",
+  "scheduleMode": "ai-optimized",
+  "thresholds": {
+    "heartRateBpm": 174,
+    "paceSecondsPerKm": 322,
+    "powerWatts": 280
+  },
+  "buildProgression": "normal"
+}

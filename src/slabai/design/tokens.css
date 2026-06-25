@@ -1,0 +1,71 @@
+/* SLABAI design tokens v1.0 */
+:root {
+  --slabai-brand-blue-50: #F2F1FF;
+  --slabai-brand-blue-100: #E5E2FF;
+  --slabai-brand-blue-500: #5147FF;
+  --slabai-brand-blue-600: #2E21FC;
+  --slabai-brand-blue-700: #2418D8;
+
+  --slabai-brand-orange-100: #FFE4D7;
+  --slabai-brand-orange-500: #F3662A;
+  --slabai-brand-orange-600: #E24907;
+  --slabai-brand-orange-700: #B93606;
+
+  --slabai-neutral-0: #FFFFFF;
+  --slabai-neutral-50: #F8F7FC;
+  --slabai-neutral-100: #EFEDFA;
+  --slabai-neutral-200: #E2E0ED;
+  --slabai-neutral-300: #D0CEDC;
+  --slabai-neutral-600: #667085;
+  --slabai-neutral-700: #475467;
+  --slabai-neutral-900: #111827;
+  --slabai-neutral-950: #0B0C12;
+
+  --slabai-success: #35B86B;
+  --slabai-warning: #FF7A3D;
+  --slabai-error: #EF4444;
+  --slabai-info: #4A78FF;
+
+  --slabai-bg-page: var(--slabai-neutral-50);
+  --slabai-bg-subtle: var(--slabai-neutral-100);
+  --slabai-surface: var(--slabai-neutral-0);
+  --slabai-text-primary: var(--slabai-neutral-900);
+  --slabai-text-secondary: var(--slabai-neutral-600);
+  --slabai-border: var(--slabai-neutral-300);
+  --slabai-focus: var(--slabai-brand-blue-500);
+
+  --slabai-gradient-cta:
+    linear-gradient(90deg, #2E21FC 0%, #5147FF 58%, #E24907 100%);
+
+  --slabai-font-sans: Inter, Arial, sans-serif;
+
+  --slabai-space-1: 4px;
+  --slabai-space-2: 8px;
+  --slabai-space-3: 12px;
+  --slabai-space-4: 16px;
+  --slabai-space-5: 20px;
+  --slabai-space-6: 24px;
+  --slabai-space-8: 32px;
+  --slabai-space-10: 40px;
+  --slabai-space-12: 48px;
+  --slabai-space-16: 64px;
+
+  --slabai-radius-sm: 8px;
+  --slabai-radius-md: 12px;
+  --slabai-radius-lg: 16px;
+  --slabai-radius-xl: 20px;
+  --slabai-radius-2xl: 28px;
+  --slabai-radius-pill: 999px;
+
+  --slabai-shadow-sm: 0 2px 8px rgba(17, 24, 39, 0.06);
+  --slabai-shadow-md: 0 8px 24px rgba(17, 24, 39, 0.08);
+  --slabai-shadow-lg: 0 12px 32px rgba(17, 24, 39, 0.10);
+
+  --slabai-control-sm: 36px;
+  --slabai-control-md: 44px;
+  --slabai-control-lg: 52px;
+
+  --slabai-sidebar-expanded: 256px;
+  --slabai-sidebar-collapsed: 80px;
+  --slabai-header-height: 72px;
+}
