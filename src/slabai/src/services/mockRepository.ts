@@ -1,11 +1,16 @@
 import billingJson from "../../mock/billing.json";
-import calendarJson from "../../mock/calendar.json";
 import communityJson from "../../mock/community.json";
-import insightsJson from "../../mock/insights.json";
 import integrationsJson from "../../mock/integrations.json";
 import planJson from "../../mock/plan-builder.json";
-import userJson from "../../mock/user.json";
-import { copy } from "@/lib/copy";
+import { apiRequest } from "@/services/apiClient";
+import type {
+  BackendCalendarResponse,
+  BackendInsightsResponse,
+  BackendProfile,
+  BackendTrainingPlan,
+  BackendUserSport
+} from "@/services/backendTypes";
+import { getSupabaseClient } from "@/services/supabaseClient";
 import type {
   BillingPayload,
   CalendarPayload,
@@ -15,24 +20,15 @@ import type {
   IntegrationProvider,
   PlanPreferences,
   Session,
-  User,
-  Workout
+  User
 } from "@/lib/types";
 
 const delay = (ms = 280) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
-const userFixture = userJson as unknown as User;
 const planFixture = planJson as unknown as PlanPreferences;
-const calendarFixture = calendarJson as unknown as CalendarPayload;
 const communityFixture = communityJson as unknown as CommunityPayload;
-const insightsFixture = insightsJson as unknown as InsightsPayload;
 const integrationsFixture = integrationsJson as unknown as { items: Integration[] };
 const billingFixture = billingJson as unknown as BillingPayload;
-
-const sessionKey = "slabai-session";
-const planKey = "slabai-plan-preferences";
-const generatedPlanKey = "slabai-generated-plan";
-const userKey = "slabai-user";
 
 function readStorage<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -51,86 +47,130 @@ function writeStorage<T>(key: string, value: T): void {
 }
 
 export async function requestCode(email: string, intent: "register" | "login") {
-  await delay();
-  if (!email.includes("@")) {
-    throw new Error("Email không hợp lệ.");
-  }
-  return { requestId: `otp_${intent}_demo`, retryAfterSeconds: 60 };
+  const { error } = await getSupabaseClient().auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: intent === "register"
+    }
+  });
+  if (error) throw new Error(error.message);
+  return { requestId: `otp_${intent}_supabase`, retryAfterSeconds: 60 };
 }
 
 export async function verifyCode(code: string, remember: boolean): Promise<Session> {
-  await delay();
-  if (code !== copy.otp) {
-    throw new Error("Mã xác thực chưa đúng.");
-  }
-  const session: Session = { userId: userFixture.id, authenticated: true, remember };
-  writeStorage(sessionKey, session);
-  return session;
+  const email = window.sessionStorage.getItem("slabai-otp-email");
+  if (!email) throw new Error("Email xac thuc khong ton tai.");
+
+  const { data, error } = await getSupabaseClient().auth.verifyOtp({
+    email,
+    token: code,
+    type: "email"
+  });
+  if (error) throw new Error(error.message);
+
+  return { userId: data.user?.id ?? "", authenticated: Boolean(data.session), remember };
 }
 
-export function createMockSession(remember = true): Session {
-  const session: Session = { userId: userFixture.id, authenticated: true, remember };
-  writeStorage(sessionKey, session);
-  return session;
+export async function signInWithGoogle(): Promise<void> {
+  const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/calendar` : undefined;
+  const { error } = await getSupabaseClient().auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo }
+  });
+  if (error) throw new Error(error.message);
 }
 
-export function getSession(): Session | null {
-  return readStorage<Session | null>(sessionKey, null);
+export async function getSession(): Promise<Session | null> {
+  const { data, error } = await getSupabaseClient().auth.getSession();
+  if (error || !data.session?.user) return null;
+  return { userId: data.session.user.id, authenticated: true, remember: true };
 }
 
-export function clearSession(): void {
-  if (typeof window !== "undefined") {
-    window.localStorage.removeItem(sessionKey);
-  }
+export async function clearSession(): Promise<void> {
+  await getSupabaseClient().auth.signOut();
 }
 
 export async function getUser(): Promise<User> {
-  await delay(180);
-  return readStorage<User>(userKey, userFixture);
+  return toUser(await apiRequest<BackendProfile>("/profile"));
 }
 
 export async function saveUser(nextUser: User): Promise<User> {
-  await delay(360);
-  writeStorage(userKey, nextUser);
-  return nextUser;
+  const profile = await apiRequest<BackendProfile, Partial<BackendProfile>>("/profile", {
+    method: "PATCH",
+    body: {
+      first_name: nextUser.firstName,
+      last_name: nextUser.lastName,
+      avatar_url: nextUser.avatarUrl ?? null,
+      date_of_birth: nextUser.dateOfBirth,
+      gender: nextUser.gender,
+      height_cm: nextUser.heightCm,
+      weight_kg: nextUser.weightKg,
+      primary_sport: nextUser.primarySport
+    }
+  });
+  return toUser(profile);
 }
 
 export async function getPlanPreferences(): Promise<PlanPreferences> {
-  await delay(180);
-  return readStorage<PlanPreferences>(planKey, planFixture);
+  const sports = await apiRequest<BackendUserSport[]>("/profile/sports");
+  return sports[0] ? toPlanPreferences(sports[0]) : planFixture;
 }
 
 export function readPlanPreferences(): PlanPreferences {
-  return readStorage<PlanPreferences>(planKey, planFixture);
+  return planFixture;
 }
 
 export async function savePlanPreferences(nextPlan: PlanPreferences): Promise<PlanPreferences> {
-  await delay(220);
-  writeStorage(planKey, nextPlan);
-  return nextPlan;
+  const saved = await apiRequest<BackendUserSport, ReturnType<typeof toUserSportPayload>>("/profile/sports", {
+    method: "PUT",
+    body: toUserSportPayload(nextPlan)
+  });
+  return toPlanPreferences(saved);
 }
 
 export async function generatePlan(): Promise<{ planId: string; status: "generated"; calendarStart: string }> {
-  await delay(700);
-  const response = { planId: "plan_demo_01", status: "generated" as const, calendarStart: "2026-06-22" };
-  writeStorage(generatedPlanKey, response);
-  return response;
+  const preferences = await getPlanPreferences();
+  const plan = await apiRequest<BackendTrainingPlan, { sport: string; starts_on: string; name: string }>(
+    "/training/plans/generate",
+    {
+      method: "POST",
+      body: {
+        sport: preferences.sport,
+        starts_on: new Date().toISOString().slice(0, 10),
+        name: "SLABAI Generated Plan"
+      }
+    }
+  );
+  return { planId: plan.id, status: "generated", calendarStart: plan.starts_on };
 }
 
 export async function getCalendar(): Promise<CalendarPayload> {
-  await delay(260);
-  const generated = readStorage<{ planId: string } | null>(generatedPlanKey, null);
-  if (!generated) return calendarFixture;
-  const extraWorkout: Workout = {
-    id: "w_generated",
-    date: "2026-06-29",
-    sport: readPlanPreferences().sport,
-    title: "Generated Plan Kickoff",
-    durationMinutes: 35,
-    intensity: "Zone 2",
-    status: "planned"
+  const today = new Date();
+  const from = new Date(today);
+  from.setDate(today.getDate() - 14);
+  const to = new Date(today);
+  to.setDate(today.getDate() + 28);
+
+  const payload = await apiRequest<BackendCalendarResponse>("/calendar", {
+    query: {
+      date_from: from.toISOString().slice(0, 10),
+      date_to: to.toISOString().slice(0, 10)
+    }
+  });
+
+  return {
+    range: payload.range,
+    workouts: payload.events.map((event) => ({
+      id: event.id,
+      date: event.date,
+      sport: event.sport,
+      title: event.title,
+      durationMinutes: event.duration_minutes ?? undefined,
+      distanceKm: event.distance_km ?? undefined,
+      intensity: event.intensity ?? undefined,
+      status: event.status === "completed" || event.status === "skipped" ? event.status : "planned"
+    }))
   };
-  return { ...calendarFixture, workouts: [...calendarFixture.workouts, extraWorkout] };
 }
 
 export async function getCommunity(): Promise<CommunityPayload> {
@@ -139,8 +179,18 @@ export async function getCommunity(): Promise<CommunityPayload> {
 }
 
 export async function getInsights(): Promise<InsightsPayload> {
-  await delay(260);
-  return insightsFixture;
+  const payload = await apiRequest<BackendInsightsResponse>("/insights/profiles-zones", {
+    query: { sport: "running", range_key: "6w" }
+  });
+  return {
+    sport: payload.sport,
+    range: payload.range,
+    metrics: payload.metrics,
+    curve: payload.curve.map((point) => ({
+      durationSeconds: point.duration_seconds,
+      paceSecondsPerKm: point.pace_seconds_per_km
+    }))
+  };
 }
 
 export async function getIntegrations(): Promise<Integration[]> {
@@ -178,9 +228,60 @@ export async function addMockPaymentMethod(): Promise<BillingPayload> {
 export async function getHelpCategories() {
   await delay(180);
   return [
-    { id: "getting-started", title: "Bắt đầu với SLABAI", count: 5 },
-    { id: "training", title: "Kế hoạch tập luyện", count: 8 },
-    { id: "devices", title: "Thiết bị & ứng dụng", count: 4 },
-    { id: "billing", title: "Thanh toán", count: 3 }
+    { id: "getting-started", title: "Bat dau voi SLABAI", count: 5 },
+    { id: "training", title: "Ke hoach tap luyen", count: 8 },
+    { id: "devices", title: "Thiet bi & ung dung", count: 4 },
+    { id: "billing", title: "Thanh toan", count: 3 }
   ];
+}
+
+function toUser(profile: BackendProfile): User {
+  return {
+    id: profile.id,
+    firstName: profile.first_name ?? "",
+    lastName: profile.last_name ?? "",
+    email: profile.email,
+    avatarUrl: profile.avatar_url,
+    dateOfBirth: profile.date_of_birth ?? undefined,
+    gender: profile.gender ?? undefined,
+    heightCm: profile.height_cm ?? undefined,
+    weightKg: profile.weight_kg ?? undefined,
+    primarySport: profile.primary_sport
+  };
+}
+
+function toPlanPreferences(sport: BackendUserSport): PlanPreferences {
+  return {
+    sport: sport.sport,
+    goalMode: sport.goal_mode,
+    races: sport.race_goal ? [{ id: sport.id, ...sport.race_goal } as PlanPreferences["races"][number]] : [],
+    fitnessGoal: {
+      focus: sport.fitness_focus ?? "5k",
+      durationWeeks: sport.fitness_duration_weeks ?? 6
+    },
+    volume: sport.volume,
+    scheduleMode: sport.schedule_mode,
+    thresholds: {
+      heartRateBpm: sport.heart_rate_bpm ?? undefined,
+      paceSecondsPerKm: sport.pace_seconds_per_km ?? undefined,
+      powerWatts: sport.power_watts ?? undefined
+    },
+    buildProgression: sport.build_progression
+  };
+}
+
+function toUserSportPayload(plan: PlanPreferences) {
+  return {
+    sport: plan.sport,
+    goal_mode: plan.goalMode,
+    fitness_focus: plan.fitnessGoal?.focus ?? null,
+    fitness_duration_weeks: plan.fitnessGoal?.durationWeeks ?? null,
+    race_goal: plan.races[0] ?? null,
+    volume: plan.volume,
+    schedule_mode: plan.scheduleMode,
+    heart_rate_bpm: plan.thresholds.heartRateBpm ?? null,
+    pace_seconds_per_km: plan.thresholds.paceSecondsPerKm ?? null,
+    power_watts: plan.thresholds.powerWatts ?? null,
+    build_progression: plan.buildProgression
+  };
 }

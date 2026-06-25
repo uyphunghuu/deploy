@@ -51,9 +51,6 @@ export interface NavGroup {
 
 export const navGroups: NavGroup[] = [
   {
-    items: [{ href: routes.dashboard, label: "Dashboard", icon: Home }]
-  },
-  {
     label: "Training",
     items: [
       { href: routes.calendar, label: "Calendar", icon: CalendarDays },

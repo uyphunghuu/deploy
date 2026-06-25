@@ -9,6 +9,7 @@ import { Logo } from "@/components/ui/Logo";
 import { copy } from "@/lib/copy";
 import { navGroups } from "@/lib/routes";
 import { getSession } from "@/services/mockRepository";
+import { ChatbotLauncher } from "@/components/chatbot/ChatbotLauncher";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -21,9 +22,22 @@ export function AppShell({ children }: AppShellProps) {
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    const session = getSession();
-    setChecked(true);
-    if (!session?.authenticated) router.replace("/login");
+    let mounted = true;
+    getSession()
+      .then((session) => {
+        if (!mounted) return;
+        if (!session?.authenticated) {
+          router.replace("/login");
+          return;
+        }
+        setChecked(true);
+      })
+      .catch(() => {
+        if (mounted) router.replace("/login");
+      });
+    return () => {
+      mounted = false;
+    };
   }, [router]);
 
   useEffect(() => setOpen(false), [pathname]);
@@ -97,6 +111,7 @@ export function AppShell({ children }: AppShellProps) {
             {checked ? children : <div className="skeleton app-shell__skeleton" />}
           </div>
         </main>
+        {checked && <ChatbotLauncher />}
       </div>
     </div>
   );

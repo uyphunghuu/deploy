@@ -38,7 +38,7 @@ export function OtpVerificationForm({ intent }: OtpVerificationFormProps) {
     setLoading(true);
     try {
       await verifyCode(code, sessionStorage.getItem("slabai-remember") !== "false");
-      router.push(intent === "register" ? routes.planSport : routes.calendar);
+      router.push(routes.calendar);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Mã xác thực chưa đúng.");
     } finally {
