@@ -1,0 +1,81 @@
+@media (min-width: 1280px) {
+  .marketing-header {
+    justify-content: flex-start;
+    gap: var(--slabai-space-10);
+  }
+
+  .marketing-header nav {
+    margin-right: auto;
+  }
+
+  .marketing-login-link {
+    min-height: var(--slabai-control-md);
+    gap: var(--slabai-space-2);
+    border-radius: var(--slabai-radius-pill);
+    background: var(--slabai-neutral-0);
+    box-shadow: var(--slabai-shadow-sm);
+  }
+
+  .marketing-hero {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(320px, 360px)
+      minmax(0, 1fr);
+  }
+
+  .hero-copy {
+    align-content: start;
+    padding-top: var(--slabai-space-16);
+    padding-bottom: calc(var(--slabai-space-1) - var(--slabai-space-1));
+  }
+
+  .hero-copy h1 {
+    max-width: calc(
+      var(--slabai-space-20) + var(--slabai-space-20) + var(--slabai-space-20) +
+        var(--slabai-space-20) + var(--slabai-space-20) + var(--slabai-space-8)
+    );
+    font-size: calc(var(--slabai-font-4xl) + var(--slabai-space-2));
+  }
+
+  .hero-visual {
+    width: 54%;
+    overflow: visible;
+    transform: none;
+  }
+
+  .hero-athlete-image {
+    z-index: 0;
+  }
+
+  .hero-visual::after {
+    z-index: 1;
+    background: linear-gradient(90deg, var(--slabai-brand-blue-50), transparent 36%);
+  }
+
+  .metric-float {
+    left: var(--slabai-space-6);
+    bottom: var(--slabai-space-16);
+    width: min(calc(var(--slabai-space-20) * 5), calc(100% - var(--slabai-space-12)));
+    z-index: 3;
+    background: var(--slabai-neutral-0);
+    box-shadow: var(--slabai-shadow-lg);
+  }
+
+  .registration-card {
+    width: calc(var(--slabai-space-20) * 4);
+    transform: none;
+  }
+
+  .community-visual {
+    align-content: start;
+    padding-top: var(--slabai-space-16);
+  }
+
+  .community-image {
+    object-position: 68% center;
+  }
+
+  .social-proof {
+    background: var(--slabai-neutral-0);
+  }
+}

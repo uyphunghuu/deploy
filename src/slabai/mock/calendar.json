@@ -1,0 +1,66 @@
+{
+  "range": {
+    "from": "2026-06-15",
+    "to": "2026-07-12"
+  },
+  "workouts": [
+    {
+      "id": "w01",
+      "date": "2026-06-22",
+      "sport": "running",
+      "title": "Chạy bộ buổi sáng",
+      "durationMinutes": 42,
+      "distanceKm": 6.3,
+      "intensity": "Zone 2",
+      "status": "completed"
+    },
+    {
+      "id": "w02",
+      "date": "2026-06-23",
+      "sport": "running",
+      "title": "Aerobic Development",
+      "durationMinutes": 38,
+      "distanceKm": 5.1,
+      "intensity": "Zone 2",
+      "status": "completed"
+    },
+    {
+      "id": "w03",
+      "date": "2026-06-24",
+      "sport": "strength",
+      "title": "Strength & Conditioning",
+      "durationMinutes": 30,
+      "status": "planned"
+    },
+    {
+      "id": "w04",
+      "date": "2026-06-25",
+      "sport": "running",
+      "title": "Aerobic Development",
+      "durationMinutes": 30,
+      "status": "planned"
+    },
+    {
+      "id": "w05",
+      "date": "2026-06-26",
+      "sport": "rest",
+      "title": "Rest",
+      "status": "planned"
+    },
+    {
+      "id": "w06",
+      "date": "2026-06-27",
+      "sport": "running",
+      "title": "Aerobic Development",
+      "durationMinutes": 50,
+      "status": "planned"
+    },
+    {
+      "id": "w07",
+      "date": "2026-06-28",
+      "sport": "rest",
+      "title": "Rest",
+      "status": "planned"
+    }
+  ]
+}

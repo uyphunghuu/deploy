@@ -1,0 +1,48 @@
+{
+  "sport": "running",
+  "range": "6w",
+  "metrics": {
+    "aerobicThresholdPace": "6:53/km",
+    "thresholdPace": "5:22/km",
+    "vo2MaxPace": "4:48/km",
+    "sprintPace": "2:26/km"
+  },
+  "curve": [
+    {
+      "durationSeconds": 10,
+      "paceSecondsPerKm": 167
+    },
+    {
+      "durationSeconds": 30,
+      "paceSecondsPerKm": 200
+    },
+    {
+      "durationSeconds": 60,
+      "paceSecondsPerKm": 235
+    },
+    {
+      "durationSeconds": 120,
+      "paceSecondsPerKm": 260
+    },
+    {
+      "durationSeconds": 300,
+      "paceSecondsPerKm": 290
+    },
+    {
+      "durationSeconds": 600,
+      "paceSecondsPerKm": 315
+    },
+    {
+      "durationSeconds": 1800,
+      "paceSecondsPerKm": 350
+    },
+    {
+      "durationSeconds": 3600,
+      "paceSecondsPerKm": 370
+    },
+    {
+      "durationSeconds": 7200,
+      "paceSecondsPerKm": 410
+    }
+  ]
+}

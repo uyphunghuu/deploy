@@ -1,0 +1,630 @@
+{
+  "screens": [
+    {
+      "id": "AUTH-01",
+      "order": 1,
+      "name": "Register Options",
+      "file": "01-Register-Options.png",
+      "route": "/register",
+      "status": "ready",
+      "priority": "P0",
+      "purpose": "Landing and registration-choice screen that introduces SLABAI and offers Google or email registration.",
+      "actions": [
+        "Open Google registration mock",
+        "Navigate to /register/email",
+        "Navigate to /login",
+        "Open AI Coach, Community, and About navigation anchors"
+      ],
+      "states": [
+        "default",
+        "google-loading",
+        "navigation-hover"
+      ],
+      "components": [
+        "MarketingHeader",
+        "HeroPanel",
+        "CommunityPanel",
+        "RegistrationCard",
+        "SocialProofBar",
+        "BrandLogo",
+        "PrimaryButton",
+        "SecondaryButton"
+      ]
+    },
+    {
+      "id": "AUTH-02",
+      "order": 2,
+      "name": "Register by Email",
+      "file": "02-Register-Email.png",
+      "route": "/register/email",
+      "status": "ready",
+      "priority": "P0",
+      "purpose": "Collect an email address or begin a mocked Google sign-up flow.",
+      "actions": [
+        "Submit email",
+        "Navigate to /register/verify",
+        "Start Google registration mock",
+        "Navigate to /login"
+      ],
+      "states": [
+        "default",
+        "invalid-email",
+        "submitting",
+        "server-error"
+      ],
+      "components": [
+        "AuthShell",
+        "GoogleButton",
+        "EmailField",
+        "PrimaryButton",
+        "LegalLinks"
+      ]
+    },
+    {
+      "id": "AUTH-03",
+      "order": 3,
+      "name": "Register Email Verification",
+      "file": "03-Register-Email-Code.png",
+      "route": "/register/verify",
+      "status": "ready",
+      "priority": "P0",
+      "purpose": "Verify a six-digit one-time code after email registration.",
+      "actions": [
+        "Enter six-digit code",
+        "Resend code after countdown",
+        "Continue to /plan-builder/sport",
+        "Return to email registration"
+      ],
+      "states": [
+        "default",
+        "invalid-code",
+        "expired-code",
+        "resending",
+        "verified"
+      ],
+      "components": [
+        "AuthShell",
+        "BackButton",
+        "OtpInput",
+        "Countdown",
+        "PrimaryButton",
+        "SecondaryButton"
+      ]
+    },
+    {
+      "id": "AUTH-04",
+      "order": 4,
+      "name": "Login by Email",
+      "file": "04-Login-Email.png",
+      "route": "/login",
+      "status": "ready",
+      "priority": "P0",
+      "purpose": "Sign in with Google or email using a passwordless verification-code flow.",
+      "actions": [
+        "Submit email",
+        "Navigate to /login/verify",
+        "Toggle remember login",
+        "Start Google login mock",
+        "Navigate to /register"
+      ],
+      "states": [
+        "default",
+        "invalid-email",
+        "submitting",
+        "server-error"
+      ],
+      "components": [
+        "AuthShell",
+        "GoogleButton",
+        "EmailField",
+        "Checkbox",
+        "PrimaryButton",
+        "LegalLinks"
+      ]
+    },
+    {
+      "id": "AUTH-05",
+      "order": 5,
+      "name": "Login Email Verification",
+      "file": "05-Login-Email-Code.png",
+      "route": "/login/verify",
+      "status": "ready",
+      "priority": "P0",
+      "purpose": "Verify a six-digit code and enter the authenticated application.",
+      "actions": [
+        "Enter code",
+        "Resend code after countdown",
+        "Continue to /dashboard",
+        "Return to login"
+      ],
+      "states": [
+        "default",
+        "invalid-code",
+        "expired-code",
+        "resending",
+        "verified"
+      ],
+      "components": [
+        "AuthShell",
+        "BackButton",
+        "OtpInput",
+        "Countdown",
+        "PrimaryButton"
+      ]
+    },
+    {
+      "id": "TRAIN-01",
+      "order": 6,
+      "name": "Calendar",
+      "file": "06-Calendar.png",
+      "route": "/calendar",
+      "status": "ready",
+      "priority": "P0",
+      "purpose": "Display planned workouts and recorded activities in a monthly calendar with a social activity rail.",
+      "actions": [
+        "Change date",
+        "Jump to today",
+        "Add workout",
+        "Search",
+        "Filter",
+        "Change calendar view",
+        "Open workout detail",
+        "Open activity detail",
+        "Open user menu"
+      ],
+      "states": [
+        "month-default",
+        "loading",
+        "empty-month",
+        "filtered",
+        "workout-selected",
+        "activity-panel-open"
+      ],
+      "components": [
+        "AppShell",
+        "Sidebar",
+        "Topbar",
+        "CalendarToolbar",
+        "MonthGrid",
+        "WorkoutEventCard",
+        "RestDay",
+        "CommunityActivityRail",
+        "FloatingCoachButton"
+      ]
+    },
+    {
+      "id": "COMM-01",
+      "order": 7,
+      "name": "Community Feed",
+      "file": "07-Community-Feed.png",
+      "route": "/community",
+      "status": "ready",
+      "priority": "P1",
+      "purpose": "Show the user profile summary, followed athletes, activity feed, challenges, clubs, and friend suggestions.",
+      "actions": [
+        "Change feed filter",
+        "Open activity",
+        "Open athlete profile",
+        "Open challenge list",
+        "Open club list",
+        "Follow suggested user",
+        "Open activity menu"
+      ],
+      "states": [
+        "default",
+        "loading",
+        "empty-feed",
+        "feed-error",
+        "following-filter"
+      ],
+      "components": [
+        "CommunityShell",
+        "UserSummaryCard",
+        "FeedFilter",
+        "ActivityPost",
+        "RouteMap",
+        "ChallengeCard",
+        "ClubStrip",
+        "FriendSuggestionList"
+      ]
+    },
+    {
+      "id": "PLAN-01",
+      "order": 8,
+      "name": "Plan Builder – Sport",
+      "file": "08-Plan-Builder-Sport.png",
+      "route": "/plan-builder/sport",
+      "status": "ready",
+      "priority": "P0",
+      "purpose": "Select running, cycling, or swimming as the primary sport for a generated plan.",
+      "actions": [
+        "Select sport",
+        "Review sport description",
+        "Continue to goals",
+        "End plan"
+      ],
+      "states": [
+        "running-selected",
+        "cycling-selected",
+        "swimming-selected",
+        "validation-error"
+      ],
+      "components": [
+        "AppShell",
+        "PlanBuilderHeader",
+        "StepTabs",
+        "SportOptionCard",
+        "InfoPanel",
+        "WizardFooter"
+      ]
+    },
+    {
+      "id": "PLAN-02A",
+      "order": 9,
+      "name": "Plan Builder – Race Goals",
+      "file": "09-Plan-Builder-Goals-Races.png",
+      "route": "/plan-builder/goals?mode=race",
+      "status": "ready",
+      "priority": "P0",
+      "purpose": "Configure one or more target races, dates, names, and priorities.",
+      "actions": [
+        "Select race-goal mode",
+        "Add race",
+        "Remove race",
+        "Set event type/date/name/priority",
+        "Continue despite warning",
+        "Return to sport"
+      ],
+      "states": [
+        "empty-race",
+        "invalid-race",
+        "one-race",
+        "multiple-races"
+      ],
+      "components": [
+        "PlanBuilderHeader",
+        "StepTabs",
+        "SegmentedControl",
+        "RaceForm",
+        "PrioritySelector",
+        "ValidationSummary",
+        "WizardFooter"
+      ]
+    },
+    {
+      "id": "PLAN-02B",
+      "order": 10,
+      "name": "Plan Builder – Fitness Goals",
+      "file": "10-Plan-Builder-Goals-Fitness.png",
+      "route": "/plan-builder/goals?mode=fitness",
+      "status": "ready",
+      "priority": "P0",
+      "purpose": "Configure a fitness-building focus and plan duration instead of a target race.",
+      "actions": [
+        "Select fitness mode",
+        "Choose focus",
+        "Set duration",
+        "Continue to schedule",
+        "Return to sport"
+      ],
+      "states": [
+        "default",
+        "invalid-duration",
+        "ready"
+      ],
+      "components": [
+        "PlanBuilderHeader",
+        "StepTabs",
+        "SegmentedControl",
+        "SelectField",
+        "NumberField",
+        "WizardFooter"
+      ]
+    },
+    {
+      "id": "PLAN-03",
+      "order": 11,
+      "name": "Plan Builder – Schedule",
+      "file": "11-Plan-Builder-Schedule.png",
+      "route": "/plan-builder/schedule",
+      "status": "ready",
+      "priority": "P0",
+      "purpose": "Choose weekly training volume and an AI-optimized schedule.",
+      "actions": [
+        "Select low/mid/high volume",
+        "Choose AI-optimized schedule",
+        "Continue to advanced",
+        "Return to goals"
+      ],
+      "states": [
+        "low-volume",
+        "mid-volume",
+        "high-volume",
+        "custom-schedule-todo"
+      ],
+      "components": [
+        "PlanBuilderHeader",
+        "StepTabs",
+        "VolumeCard",
+        "ScheduleOption",
+        "InfoPanel",
+        "WizardFooter"
+      ]
+    },
+    {
+      "id": "PLAN-04",
+      "order": 12,
+      "name": "Plan Builder – Advanced",
+      "file": "12-Plan-Builder-Advanced.png",
+      "route": "/plan-builder/advanced",
+      "status": "ready",
+      "priority": "P0",
+      "purpose": "Fine-tune performance thresholds and plan build progression.",
+      "actions": [
+        "Set heart-rate threshold",
+        "Set pace threshold",
+        "Set power threshold",
+        "Change sport threshold tab",
+        "Choose build progression",
+        "Continue to review",
+        "Return to schedule"
+      ],
+      "states": [
+        "default",
+        "invalid-threshold",
+        "ready"
+      ],
+      "components": [
+        "PlanBuilderHeader",
+        "StepTabs",
+        "ThresholdFields",
+        "SportTabs",
+        "ProgressionSelector",
+        "InfoPanel",
+        "WizardFooter"
+      ]
+    },
+    {
+      "id": "PLAN-05",
+      "order": 13,
+      "name": "Plan Builder – Review",
+      "file": "13-Plan-Builder-Review.png",
+      "route": "/plan-builder/review",
+      "status": "ready-normalized",
+      "priority": "P0",
+      "purpose": "Review all plan preferences, edit earlier sections, and generate a plan.",
+      "actions": [
+        "Edit sport/profile",
+        "Edit goals",
+        "Edit schedule",
+        "Edit advanced settings",
+        "Generate plan",
+        "Return to advanced"
+      ],
+      "states": [
+        "default",
+        "saving",
+        "generation-loading",
+        "generation-error",
+        "success"
+      ],
+      "components": [
+        "PlanBuilderHeader",
+        "ReviewSection",
+        "EditLink",
+        "ReadyBanner",
+        "WizardFooter"
+      ]
+    },
+    {
+      "id": "INSIGHT-01",
+      "order": 14,
+      "name": "Profiles & Zones",
+      "file": "14-Insights-Zone.png",
+      "route": "/insights/profiles-zones",
+      "status": "ready",
+      "priority": "P0",
+      "purpose": "Visualize running pace profile and training zones across aerobic threshold, threshold, VO₂ max, and sprint ranges.",
+      "actions": [
+        "Switch pace/power profile",
+        "Change sport",
+        "Change time range",
+        "Ask AI Coach",
+        "Collapse chart section",
+        "Hover chart points"
+      ],
+      "states": [
+        "default",
+        "loading",
+        "insufficient-data",
+        "chart-error"
+      ],
+      "components": [
+        "AppShell",
+        "PageHeader",
+        "ProfileTabs",
+        "CoachBanner",
+        "MetricCard",
+        "PaceProfileChart",
+        "TimeRangeTabs",
+        "SportSelect"
+      ]
+    },
+    {
+      "id": "ACCOUNT-01",
+      "order": 15,
+      "name": "Profile",
+      "file": "15-Profile.png",
+      "route": "/profile",
+      "status": "ready",
+      "priority": "P1",
+      "purpose": "Manage photo, personal information, athletic metrics, and password/security actions.",
+      "actions": [
+        "Upload/change photo",
+        "Edit profile fields",
+        "Change password",
+        "Autosave changes"
+      ],
+      "states": [
+        "default",
+        "saving",
+        "saved",
+        "validation-error",
+        "upload-error"
+      ],
+      "components": [
+        "AppShell",
+        "ProfilePhotoCard",
+        "FormSection",
+        "TextField",
+        "DateField",
+        "SelectField",
+        "AutosaveStatus",
+        "SecondaryButton"
+      ]
+    },
+    {
+      "id": "ACCOUNT-02",
+      "order": 16,
+      "name": "AI Coach Settings",
+      "file": "16-AI-Coach-Settings.png",
+      "route": "/settings/ai-coach",
+      "status": "ready",
+      "priority": "P1",
+      "purpose": "Configure coach personality and explanation style.",
+      "actions": [
+        "Choose casual/professional coach vibe",
+        "Choose explanation style",
+        "Switch settings tab",
+        "Autosave changes"
+      ],
+      "states": [
+        "default",
+        "saving",
+        "saved",
+        "save-error"
+      ],
+      "components": [
+        "AppShell",
+        "SettingsTabs",
+        "ChoiceCard",
+        "AutosaveStatus"
+      ]
+    },
+    {
+      "id": "ACCOUNT-03",
+      "order": 17,
+      "name": "Devices & Apps",
+      "file": "17-Devices-Apps.png",
+      "route": "/settings/devices-apps",
+      "status": "ready",
+      "priority": "P0",
+      "purpose": "Review and manage mocked Garmin, Strava, and other integration connections.",
+      "actions": [
+        "Configure connected app",
+        "Connect disconnected app",
+        "Disconnect app",
+        "Review permissions"
+      ],
+      "states": [
+        "default",
+        "connecting",
+        "connected",
+        "not-connected",
+        "connection-error"
+      ],
+      "components": [
+        "AppShell",
+        "ConnectionsTable",
+        "IntegrationLogo",
+        "StatusBadge",
+        "ActionButton",
+        "ConfirmationDialog"
+      ]
+    },
+    {
+      "id": "ACCOUNT-04",
+      "order": 18,
+      "name": "Billing & Subscription",
+      "file": "18-Billing-Subscription.png",
+      "route": "/settings/billing",
+      "status": "ready",
+      "priority": "P2",
+      "purpose": "Manage payment methods and subscription information using mock UI only.",
+      "actions": [
+        "Add payment method mock",
+        "View subscription section",
+        "View invoice placeholder"
+      ],
+      "states": [
+        "empty-payment-methods",
+        "payment-method-present",
+        "loading",
+        "error"
+      ],
+      "components": [
+        "AppShell",
+        "EmptyState",
+        "PaymentMethodCard",
+        "SubscriptionCard",
+        "PrimaryButton"
+      ]
+    },
+    {
+      "id": "SUPPORT-01",
+      "order": 19,
+      "name": "Help Center",
+      "file": "19-Help-Center.png",
+      "route": "/help",
+      "status": "ready",
+      "priority": "P2",
+      "purpose": "Search support content and browse help categories.",
+      "actions": [
+        "Search topics",
+        "Open category",
+        "Open help article",
+        "Clear search"
+      ],
+      "states": [
+        "default",
+        "search-results",
+        "no-results",
+        "loading"
+      ],
+      "components": [
+        "AppShell",
+        "SearchField",
+        "HelpCategoryRow",
+        "HelpArticleList",
+        "EmptyState"
+      ]
+    }
+  ],
+  "missingScreens": [
+    {
+      "id": "CORE-01",
+      "name": "Dashboard",
+      "route": "/dashboard",
+      "reason": "Visible in product navigation/flow, but no dedicated PNG was supplied. Build a conservative placeholder shell and replace later."
+    },
+    {
+      "id": "TRAIN-02",
+      "name": "Roadmap",
+      "route": "/roadmap",
+      "reason": "Visible in sidebar but no dedicated PNG was supplied. Keep route and nav item behind a placeholder."
+    },
+    {
+      "id": "TRAIN-03",
+      "name": "Import Data",
+      "route": "/import-data",
+      "reason": "Visible in sidebar but no dedicated PNG was supplied. Implement a small integration/import placeholder."
+    },
+    {
+      "id": "ACCOUNT-05",
+      "name": "General Preferences",
+      "route": "/settings/preferences",
+      "reason": "Visible in some reference sidebars, but no dedicated PNG was supplied. Do not prioritize until a design is added."
+    }
+  ],
+  "brandingRule": "Replace reference-brand identity with SLABAI while preserving layout structure."
+}

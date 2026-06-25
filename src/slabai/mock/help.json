@@ -1,0 +1,29 @@
+{
+  "categories": [
+    {
+      "id": "getting-started",
+      "title": "Bắt đầu",
+      "questionCount": 10
+    },
+    {
+      "id": "account-billing",
+      "title": "Tài khoản & thanh toán",
+      "questionCount": 14
+    },
+    {
+      "id": "devices",
+      "title": "Thiết bị & tích hợp",
+      "questionCount": 18
+    },
+    {
+      "id": "training",
+      "title": "Tập luyện & bài tập",
+      "questionCount": 18
+    },
+    {
+      "id": "planning",
+      "title": "Lập kế hoạch & lịch",
+      "questionCount": 12
+    }
+  ]
+}
