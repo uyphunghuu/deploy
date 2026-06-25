@@ -1,0 +1,212 @@
+name: Agent CI — Lint + Test + MLflow
+
+# ── Triggers ───────────────────────────────────────────────────────────────────
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "requirements.txt"
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "requirements.txt"
+
+# ── Jobs ───────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ── Job 1: Lint & Format ────────────────────────────────────────────────────
+  lint:
+    name: Lint & Format (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install ruff
+        run: pip install ruff==0.4.7
+
+      - name: Check lint (ruff check)
+        run: ruff check src/ tests/
+
+      - name: Check format (ruff format)
+        run: ruff format --check src/ tests/
+
+  # ── Job 2: Unit Tests (không cần API key) ───────────────────────────────────
+  unit-test:
+    name: Unit Tests + Coverage
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest==8.2.2 pytest-cov==5.0.0 mlflow==2.14.0
+
+      - name: Run unit tests
+        # KHÔNG set OPENAI_API_KEY → tests phải dùng mock hoàn toàn
+        # MLFLOW_TRACKING_URI không set → MLflow dùng local ./mlruns
+        run: |
+          pytest tests/test_agent.py tests/test_mlflow_tracker.py \
+            -v \
+            --cov=src \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --tb=short
+        env:
+          OPENAI_API_KEY: ""
+          PHOENIX_API_KEY: ""
+          PHOENIX_COLLECTOR_ENDPOINT: "http://localhost:6006/v1/traces"
+          PHOENIX_PROJECT_NAME: "ci-test"
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 14
+
+  # ── Job 3: Guardrails Tests ─────────────────────────────────────────────────
+  guardrails-test:
+    name: Guardrails Tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install pytest==8.2.2
+          # llm-guard là optional — tests fallback nếu không có
+          pip install python-dotenv || true
+
+      - name: Run guardrails tests
+        run: |
+          pytest guardrails/tests/ -v --tb=short
+
+  # ── Job 4: MLflow Smoke Test ────────────────────────────────────────────────
+  mlflow-smoke:
+    name: MLflow Smoke Test
+    runs-on: ubuntu-latest
+    needs: unit-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install mlflow==2.14.0
+
+      - name: Smoke test — AgentTracker khởi tạo và ghi log thành công
+        # Verify MLflow local tracking chạy được, không cần server
+        run: |
+          python - <<'EOF'
+          import sys
+          import os
+
+          # Dùng temp dir để tránh pollution
+          os.environ["MLFLOW_TRACKING_URI"] = "file:///tmp/mlruns-ci"
+
+          from src.mlflow_tracker import AgentTracker, calculate_cost
+
+          # Test 1: tracker khởi tạo
+          tracker = AgentTracker(experiment_name="ci-smoke-test")
+          assert tracker.enabled, "AgentTracker phải enabled khi mlflow được cài"
+          print("✓ AgentTracker khởi tạo thành công")
+
+          # Test 2: full run lifecycle
+          run_id = tracker.start_run(run_name="ci-smoke-run")
+          assert run_id is not None, "start_run phải trả về run_id"
+
+          tracker.log_params({"model": "gpt-4o", "prompt_version": "v1"})
+          tracker.log_metrics({"total_tokens": 230.0, "cost_usd": 0.0023})
+          tracker.log_eval_scores({"qa_correctness": 1.0, "hallucination": 0.0})
+          tracker.log_text("Test query", "query.txt")
+          tracker.end_run()
+          print(f"✓ Run {run_id} hoàn thành thành công")
+
+          # Test 3: cost calculation
+          cost = calculate_cost("gpt-4o", 1000, 500)
+          assert cost > 0, "Cost phải > 0"
+          print(f"✓ calculate_cost hoạt động: ${cost:.6f} cho 1000+500 tokens")
+
+          # Test 4: context manager
+          with AgentTracker(experiment_name="ci-smoke-test") as t:
+              t.start_run(run_name="context-manager-run")
+              t.log_metrics({"test": 1.0})
+          print("✓ Context manager hoạt động")
+
+          print("\n✅ Tất cả MLflow smoke tests passed!")
+          sys.exit(0)
+          EOF
+        env:
+          OPENAI_API_KEY: ""
+
+      - name: Upload MLflow artifacts (nếu có)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mlflow-local-runs
+          path: /tmp/mlruns-ci/
+          retention-days: 7
+
+  # ── Job 5: Summary ──────────────────────────────────────────────────────────
+  ci-summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [lint, unit-test, guardrails-test, mlflow-smoke]
+    if: always()
+
+    steps:
+      - name: Check all jobs
+        run: |
+          echo "=== CI Pipeline Summary ==="
+          echo "lint:             ${{ needs.lint.result }}"
+          echo "unit-test:        ${{ needs.unit-test.result }}"
+          echo "guardrails-test:  ${{ needs.guardrails-test.result }}"
+          echo "mlflow-smoke:     ${{ needs.mlflow-smoke.result }}"
+
+          if [[ "${{ needs.lint.result }}"            != "success" ||
+                "${{ needs.unit-test.result }}"       != "success" ||
+                "${{ needs.guardrails-test.result }}" != "success" ||
+                "${{ needs.mlflow-smoke.result }}"    != "success" ]]; then
+            echo "❌ CI FAILED — one or more jobs failed"
+            exit 1
+          fi
+          echo "✅ All CI checks passed!"
