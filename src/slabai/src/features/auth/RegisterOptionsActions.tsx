@@ -1,21 +1,21 @@
 "use client";
 
 import { Chrome } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { LinkButton } from "@/components/ui/LinkButton";
-import { createMockSession } from "@/services/mockRepository";
+import { signInWithGoogle } from "@/services/mockRepository";
 
 export function RegisterOptionsActions() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function registerWithGoogle() {
     setLoading(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 450));
-    createMockSession(true);
-    router.push("/plan-builder/sport");
+    try {
+      await signInWithGoogle();
+    } catch {
+      setLoading(false);
+    }
   }
 
   return (

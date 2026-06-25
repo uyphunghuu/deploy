@@ -65,7 +65,7 @@ export function CalendarView() {
   const [payload, setPayload] = useState<CalendarPayload | null>(null);
   const [community, setCommunity] = useState<CommunityPayload | null>(null);
   const [status, setStatus] = useState<"loading" | "error" | "success">("loading");
-  const [month, setMonth] = useState(() => new Date("2026-06-24T12:00:00"));
+  const [month, setMonth] = useState(() => new Date());
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [selected, setSelected] = useState<Workout | null>(null);
@@ -144,7 +144,7 @@ export function CalendarView() {
               <Button aria-label="Tháng sau" iconOnly onClick={() => setMonth((value) => addMonths(value, 1))} type="button" variant="ghost">
                 <ChevronRight size={18} />
               </Button>
-              <Button onClick={() => setMonth(new Date("2026-06-24T12:00:00"))} type="button" variant="subtle">
+              <Button onClick={() => setMonth(new Date())} type="button" variant="subtle">
                 Today
               </Button>
             </div>

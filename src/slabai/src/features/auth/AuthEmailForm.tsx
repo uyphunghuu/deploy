@@ -10,9 +10,8 @@ import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Field } from "@/components/ui/Field";
 import { LinkButton } from "@/components/ui/LinkButton";
-import { routes } from "@/lib/routes";
 import { emailSchema } from "@/lib/validation";
-import { createMockSession, requestCode } from "@/services/mockRepository";
+import { requestCode, signInWithGoogle } from "@/services/mockRepository";
 
 type EmailFormValues = z.infer<typeof emailSchema>;
 
@@ -48,9 +47,13 @@ export function AuthEmailForm({ intent }: AuthEmailFormProps) {
 
   async function onGoogle() {
     setGoogleLoading(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 450));
-    createMockSession(remember);
-    router.push(intent === "register" ? routes.planSport : routes.calendar);
+    setServerError("");
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      setServerError(error instanceof Error ? error.message : "Khong the dang nhap bang Google.");
+      setGoogleLoading(false);
+    }
   }
 
   const isRegister = intent === "register";
