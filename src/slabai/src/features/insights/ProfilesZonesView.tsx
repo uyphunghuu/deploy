@@ -22,6 +22,7 @@ import { copy } from "@/lib/copy";
 import { formatPace } from "@/lib/format";
 import type { InsightsPayload, Sport } from "@/lib/types";
 import { getInsights } from "@/services/mockRepository";
+import { useLanguage } from "@/lib/LanguageContext";
 
 type Range = "6w" | "12w" | "24w";
 
@@ -31,6 +32,7 @@ export function ProfilesZonesView() {
   const [range, setRange] = useState<Range>("6w");
   const [sport, setSport] = useState<Sport>("running");
   const [collapsed, setCollapsed] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     let mounted = true;
@@ -69,35 +71,42 @@ export function ProfilesZonesView() {
   }
 
   if (status === "empty") {
-    return <EmptyState title="Chưa đủ dữ liệu" description="Khi có thêm hoạt động, SLABAI sẽ hiển thị pace profile và zone." />;
+    return <EmptyState title={t("insights.emptyTitle")} description={t("insights.emptyDesc")} />;
   }
 
   if (status === "error" || !payload) {
-    return <EmptyState title="Không tải được chart" description="Mock chart đang gặp lỗi. Thử tải lại route này." />;
+    return <EmptyState title={t("insights.errorTitle")} description={t("insights.errorDesc")} />;
   }
+
+  const getSportText = (s: string) => {
+    if (s === "running") return t("insights.running");
+    if (s === "cycling") return t("insights.cycling");
+    if (s === "swimming") return t("insights.swimming");
+    return s;
+  };
 
   return (
     <section aria-labelledby="insights-title">
       <div className="page-header">
         <div>
           <h2 className="page-title" id="insights-title">
-            Profiles & Zones
+            {t("insights.title")}
           </h2>
-          <p>Hiểu pace profile và vùng tập luyện của bạn qua dữ liệu mock.</p>
+          <p>{t("insights.subtitle")}</p>
         </div>
         <div className="inline-actions">
           <SelectField
-            label="Sport"
+            label={t("insights.sport")}
             onChange={(event) => setSport(event.target.value as Sport)}
             options={[
-              { label: "Running", value: "running" },
-              { label: "Cycling", value: "cycling" },
-              { label: "Swimming", value: "swimming" }
+              { label: t("insights.running"), value: "running" },
+              { label: t("insights.cycling"), value: "cycling" },
+              { label: t("insights.swimming"), value: "swimming" }
             ]}
             value={sport}
           />
           <SegmentedControl
-            label="Time range"
+            label={t("insights.range")}
             onChange={setRange}
             options={[
               { label: "6W", value: "6w" },
@@ -115,28 +124,30 @@ export function ProfilesZonesView() {
             <Bot aria-hidden="true" />
             <div>
               <h2>AI Coach</h2>
-              <p className="muted">{copy.trust}</p>
+              <p className="muted">{t("insights.trust")}</p>
             </div>
-            <Button type="button" variant="subtle">Ask AI Coach</Button>
+            <Button type="button" variant="subtle">{t("insights.askCoach")}</Button>
           </div>
         </Card>
 
         <div className="card-grid">
-          <Metric label="Aerobic threshold" value={payload.metrics.aerobicThresholdPace} />
-          <Metric label="Threshold" value={payload.metrics.thresholdPace} />
-          <Metric label="VO₂ Max" value={payload.metrics.vo2MaxPace} />
-          <Metric label="Sprint" value={payload.metrics.sprintPace} />
+          <Metric label={t("insights.aerobicThreshold")} value={payload.metrics.aerobicThresholdPace} />
+          <Metric label={t("insights.threshold")} value={payload.metrics.thresholdPace} />
+          <Metric label={t("insights.vo2max")} value={payload.metrics.vo2MaxPace} />
+          <Metric label={t("insights.sprint")} value={payload.metrics.sprintPace} />
         </div>
 
         <Card className="activity-card">
           <div className="toolbar">
             <div>
-              <h2>Pace profile</h2>
-              <p className="muted">Sport: {sport}. Range: {range}.</p>
+              <h2>{t("insights.paceProfile")}</h2>
+              <p className="muted">
+                {t("insights.profileMeta").replace("{sport}", getSportText(sport)).replace("{range}", range.toUpperCase())}
+              </p>
             </div>
             <Button onClick={() => setCollapsed((value) => !value)} type="button" variant="ghost">
               <ChevronUp size={18} />
-              {collapsed ? "Mở chart" : "Thu gọn"}
+              {collapsed ? t("insights.openChart") : t("insights.collapse")}
             </Button>
           </div>
           {!collapsed && (
@@ -150,7 +161,7 @@ export function ProfilesZonesView() {
                       <YAxis tickFormatter={formatPace} stroke="var(--slabai-text-secondary)" />
                       <Tooltip
                         formatter={(value) => formatPace(Number(value))}
-                        labelFormatter={(label) => `Duration ${label}`}
+                        labelFormatter={(label) => t("insights.durationLabel").replace("{label}", label)}
                       />
                       <Line dataKey="pace" dot stroke="var(--slabai-brand-blue-600)" strokeWidth={3} type="monotone" />
                     </LineChart>
@@ -161,15 +172,15 @@ export function ProfilesZonesView() {
                 <caption className="sr-only">Accessible pace profile data</caption>
                 <thead>
                   <tr>
-                    <th>Duration</th>
-                    <th>Pace</th>
+                    <th>{t("insights.duration")}</th>
+                    <th>{t("insights.pace")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {chartData.map((point) => (
                     <tr key={point.duration}>
-                      <td data-label="Duration">{point.label}</td>
-                      <td data-label="Pace">{point.paceLabel}</td>
+                      <td data-label={t("insights.duration")}>{point.label}</td>
+                      <td data-label={t("insights.pace")}>{point.paceLabel}</td>
                     </tr>
                   ))}
                 </tbody>
