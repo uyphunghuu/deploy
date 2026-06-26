@@ -13,18 +13,18 @@ import {
   startOfWeek,
   subMonths
 } from "date-fns";
-import { vi } from "date-fns/locale";
-import { BedDouble, CalendarPlus, ChevronLeft, ChevronRight, Dumbbell, Filter, Footprints, Search } from "lucide-react";
+import { vi, enUS } from "date-fns/locale";
+import { BedDouble, ChevronLeft, ChevronRight, Dumbbell, Footprints } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Field, SelectField } from "@/components/ui/Field";
+import { Field } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
 import { SkeletonBlock } from "@/components/ui/Skeleton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { RouteMap } from "@/components/domain/RouteMap";
-import { formatDuration } from "@/lib/format";
 import type { CalendarPayload, CommunityPayload, Workout } from "@/lib/types";
 import { getCalendar, getCommunity } from "@/services/mockRepository";
 
@@ -57,8 +57,8 @@ function WorkoutIcon({ workout }: { workout: Workout }) {
   return <Footprints aria-hidden="true" size={14} />;
 }
 
-function formatDay(day: Date) {
-  return format(day, "d MMM").toUpperCase();
+function formatDay(day: Date, lang: string) {
+  return format(day, "d MMM", { locale: lang === "vi" ? vi : enUS }).toUpperCase();
 }
 
 export function CalendarView() {
@@ -66,10 +66,17 @@ export function CalendarView() {
   const [community, setCommunity] = useState<CommunityPayload | null>(null);
   const [status, setStatus] = useState<"loading" | "error" | "success">("loading");
   const [month, setMonth] = useState(() => new Date());
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState("all");
   const [selected, setSelected] = useState<Workout | null>(null);
-  const [addOpen, setAddOpen] = useState(false);
+  const { lang, t } = useLanguage();
+
+  const getSportText = (s: string, trans: (k: string) => string) => {
+    if (s === "running") return trans("insights.running");
+    if (s === "cycling") return trans("insights.cycling");
+    if (s === "swimming") return trans("insights.swimming");
+    if (s === "rest") return trans("calendar.restDay");
+    if (s === "strength") return trans("calendar.strength");
+    return s;
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -90,20 +97,15 @@ export function CalendarView() {
   }, []);
 
   const workouts = useMemo(() => {
-    const base = payload?.workouts ?? [];
-    return base.filter((workout) => {
-      const matchesQuery = workout.title.toLowerCase().includes(query.toLowerCase());
-      const matchesFilter = filter === "all" || workout.sport === filter || workout.status === filter;
-      return matchesQuery && matchesFilter;
-    });
-  }, [payload, query, filter]);
+    return payload?.workouts ?? [];
+  }, [payload]);
 
   const days = buildCalendarDays(month, payload?.range);
   const rangeStart = payload ? parseISO(payload.range.from) : startOfMonth(month);
 
   if (status === "loading") {
     return (
-      <section aria-busy="true" aria-label="Đang tải Calendar" className="content-grid">
+      <section aria-busy="true" aria-label={t("calendar.loading")} className="content-grid">
         <SkeletonBlock />
         <SkeletonBlock height="520px" />
       </section>
@@ -113,11 +115,11 @@ export function CalendarView() {
   if (status === "error") {
     return (
       <EmptyState
-        title="Không tải được Calendar"
-        description="Dữ liệu mock đang gặp lỗi. Bạn có thể thử tải lại."
+        title={t("calendar.errorTitle")}
+        description={t("calendar.errorDesc")}
         action={
           <Button onClick={() => window.location.reload()} type="button">
-            Tải lại
+            {t("calendar.reload")}
           </Button>
         }
       />
@@ -127,83 +129,85 @@ export function CalendarView() {
   return (
     <section aria-labelledby="calendar-title" className="calendar-page">
       <h2 className="sr-only" id="calendar-title">
-        Calendar
+        {t("nav.calendar")}
       </h2>
 
       <div className="calendar-layout">
         <div className="calendar-main">
           <div className="toolbar calendar-toolbar" aria-label="Calendar toolbar">
             <div className="toolbar__group calendar-toolbar__date">
-              <Field aria-label="Ngày bắt đầu" label="Ngày bắt đầu" readOnly value={format(rangeStart, "MM/dd/yyyy")} />
-              <Button onClick={() => setMonth(rangeStart)} type="button" variant="primary">
-                Go
-              </Button>
-              <Button aria-label="Tháng trước" iconOnly onClick={() => setMonth((value) => subMonths(value, 1))} type="button" variant="ghost">
+              <div style={{ maxWidth: "140px" }}>
+                <Field
+                  aria-label={t("calendar.selectDate")}
+                  label={t("calendar.selectDate")}
+                  type="date"
+                  value={format(month, "yyyy-MM-dd")}
+                  onChange={(event) => {
+                    if (event.target.value) {
+                      setMonth(parseISO(event.target.value));
+                    }
+                  }}
+                  style={{
+                    height: "36px",
+                    minHeight: "36px",
+                    padding: "4px 8px",
+                    fontSize: "var(--slabai-font-sm)"
+                  }}
+                />
+              </div>
+              <Button aria-label={t("calendar.prevMonth")} iconOnly onClick={() => setMonth((value) => subMonths(value, 1))} type="button" variant="ghost">
                 <ChevronLeft size={18} />
               </Button>
-              <Button aria-label="Tháng sau" iconOnly onClick={() => setMonth((value) => addMonths(value, 1))} type="button" variant="ghost">
+              <Button aria-label={t("calendar.nextMonth")} iconOnly onClick={() => setMonth((value) => addMonths(value, 1))} type="button" variant="ghost">
                 <ChevronRight size={18} />
               </Button>
               <Button onClick={() => setMonth(new Date())} type="button" variant="subtle">
-                Today
-              </Button>
-            </div>
-
-            <div className="toolbar__group calendar-toolbar__actions">
-              <Button onClick={() => setAddOpen(true)} type="button">
-                <CalendarPlus size={18} />
-                Add
-              </Button>
-              <Field aria-label="Search" label="Search" onChange={(event) => setQuery(event.target.value)} placeholder="Tìm workout" type="search" value={query} />
-              <SelectField
-                label="Filter"
-                onChange={(event) => setFilter(event.target.value)}
-                options={[
-                  { label: "Tất cả", value: "all" },
-                  { label: "Running", value: "running" },
-                  { label: "Strength", value: "strength" },
-                  { label: "Rest", value: "rest" },
-                  { label: "Completed", value: "completed" }
-                ]}
-                value={filter}
-              />
-              <Button aria-label="Mở filter" type="button" variant="ghost">
-                <Filter size={18} />
-                Filter
-              </Button>
-              <Button aria-label="Tìm kiếm" type="button" variant="ghost">
-                <Search size={18} />
-                Search
+                {t("calendar.today")}
               </Button>
             </div>
           </div>
 
           {payload?.workouts.length === 0 ? (
-            <EmptyState title="Tháng này chưa có workout" description="Generate plan để xem lịch tập demo trong Calendar." />
+            <EmptyState title={t("calendar.noWorkouts")} description={t("calendar.noWorkoutsDesc")} />
           ) : workouts.length === 0 ? (
-            <EmptyState title="Không có kết quả phù hợp" description="Thử xóa tìm kiếm hoặc đổi bộ lọc." />
+            <EmptyState title={t("calendar.noResults")} description={t("calendar.noResultsDesc")} />
           ) : (
             <div className="month-scroll">
               <div className="calendar-weekdays" aria-hidden="true">
                 {weekdayLabels.map((label) => (
-                  <span key={label}>{label}</span>
+                  <span key={label}>{t(`calendar.weekday.${label.toLowerCase()}`)}</span>
                 ))}
               </div>
-              <div className="month-grid" role="grid" aria-label="Lịch tháng">
+              <div className="month-grid" role="grid" aria-label={t("calendar.monthView")}>
                 {days.map((day) => {
                   const dayWorkouts = workouts.filter((workout) => isSameDay(parseISO(workout.date), day));
                   return (
-                    <div className="month-cell" data-muted={!isSameMonth(day, month)} key={day.toISOString()} role="gridcell">
-                      <span className="month-cell__date">{formatDay(day)}</span>
-                      {dayWorkouts.map((workout) => (
-                        <button className={eventTone(workout)} key={workout.id} onClick={() => setSelected(workout)} type="button">
+                    <div
+                      className="month-cell"
+                      data-muted={!isSameMonth(day, month)}
+                      data-today={isSameDay(day, new Date())}
+                      key={day.toISOString()}
+                      role="gridcell"
+                    >
+                      <span className="month-cell__date">{formatDay(day, lang)}</span>
+                       {dayWorkouts.length === 0 ? (
+                        <div className="event-card event-card--rest" style={{ opacity: 0.6 }}>
                           <span className="event-card__meta">
-                            <WorkoutIcon workout={workout} />
-                            {workout.durationMinutes ? `${workout.durationMinutes}:00` : "Rest"}
+                            <BedDouble aria-hidden="true" size={15} />
+                            {t("calendar.rest")}
                           </span>
-                          <strong>{workout.title}</strong>
-                        </button>
-                      ))}
+                        </div>
+                      ) : (
+                        dayWorkouts.map((workout) => (
+                          <button className={eventTone(workout)} key={workout.id} onClick={() => setSelected(workout)} type="button">
+                            <span className="event-card__meta">
+                              <WorkoutIcon workout={workout} />
+                              {workout.durationMinutes ? `${workout.durationMinutes}:00` : t("calendar.rest")}
+                            </span>
+                            <strong>{workout.title === "Rest" ? t("calendar.rest") : workout.title}</strong>
+                          </button>
+                        ))
+                      )}
                     </div>
                   );
                 })}
@@ -212,63 +216,71 @@ export function CalendarView() {
           )}
         </div>
 
-        <aside className="activity-rail calendar-rail" aria-label="Gợi ý kết bạn và hoạt động cộng đồng">
+        <aside className="activity-rail calendar-rail" aria-label={t("calendar.communityActivities")}>
           <Card className="calendar-friends-card">
-            <div className="calendar-card-header">
-              <h2>Gợi ý kết bạn</h2>
-              <Button size="sm" type="button" variant="ghost">
-                Tìm bạn bè
-              </Button>
-            </div>
-            <div className="friend-row">
-              <span className="user-avatar">BT</span>
-              <div>
-                <strong>Bảo Trang</strong>
-                <p className="muted">Runner mới tham gia</p>
+            <div style={{ fontSize: "0.85em" }}>
+              <div className="calendar-card-header">
+                <h2 style={{ fontSize: "1.15rem" }}>{t("calendar.friendSuggestions")}</h2>
+                <Button size="sm" type="button" variant="ghost" style={{ fontSize: "0.85rem", padding: "2px 6px", height: "auto" }}>
+                  {t("calendar.findFriends")}
+                </Button>
               </div>
-              <Button size="sm" type="button" variant="subtle">
-                Theo dõi
-              </Button>
+              <div className="friend-row" style={{ marginTop: "var(--slabai-space-2)" }}>
+                <span className="user-avatar" style={{ width: "28px", height: "28px", minWidth: "28px", fontSize: "10px" }}>BT</span>
+                <div>
+                  <strong style={{ fontSize: "0.95rem" }}>Bảo Trang</strong>
+                  <p className="muted" style={{ fontSize: "0.8rem", margin: 0 }}>{t("calendar.newRunner")}</p>
+                </div>
+                <Button size="sm" type="button" variant="subtle" style={{ padding: "4px 8px", fontSize: "0.75rem", height: "auto" }}>
+                  {t("calendar.follow")}
+                </Button>
+              </div>
+            </div>
+
+            <hr style={{ margin: "var(--slabai-space-4) 0", border: 0, borderTop: "1px solid var(--slabai-neutral-200)" }} />
+
+            <div style={{ display: "grid", gap: "var(--slabai-space-4)" }}>
+              <h2 style={{ fontSize: "var(--slabai-font-md)", fontWeight: 800 }}>{t("calendar.communityActivities")}</h2>
+              {community?.feed.map((activity) => (
+                <div
+                  key={activity.id}
+                  style={{
+                    display: "grid",
+                    gap: "var(--slabai-space-2)",
+                    padding: "var(--slabai-space-3)",
+                    border: "1px solid var(--slabai-neutral-200)",
+                    borderRadius: "var(--slabai-radius-md)",
+                    background: "var(--slabai-neutral-50)"
+                  }}
+                >
+                  <div className="calendar-card-header" style={{ padding: 0 }}>
+                    <StatusBadge tone="orange">{getSportText(activity.sport, t)}</StatusBadge>
+                    <span className="muted">{format(parseISO(activity.occurredAt), "HH:mm")}</span>
+                  </div>
+                  <h3 style={{ margin: 0, fontSize: "var(--slabai-font-md)" }}>{activity.title}</h3>
+                  <p className="muted" style={{ margin: 0, fontSize: "var(--slabai-font-sm)" }}>
+                    {activity.athleteName} · {activity.pace} · {activity.distanceKm} km
+                  </p>
+                  <RouteMap points={activity.routePoints} title={t("calendar.mapTitle").replace("{title}", activity.title)} />
+                </div>
+              ))}
             </div>
           </Card>
-          {community?.feed.map((activity) => (
-            <Card className="activity-card calendar-activity-card" key={activity.id}>
-              <div className="calendar-card-header">
-                <StatusBadge tone="orange">{activity.sport}</StatusBadge>
-                <span className="muted">{format(parseISO(activity.occurredAt), "HH:mm")}</span>
-              </div>
-              <h3>{activity.title}</h3>
-              <p className="muted">
-                {activity.athleteName} · {activity.pace} · {activity.distanceKm} km
-              </p>
-              <RouteMap points={activity.routePoints} title={`Bản đồ hoạt động ${activity.title}`} />
-            </Card>
-          ))}
         </aside>
       </div>
 
-      <Modal open={Boolean(selected)} title={selected?.title ?? "Workout"} onClose={() => setSelected(null)}>
+      <Modal open={Boolean(selected)} title={selected?.title === "Rest" ? t("calendar.rest") : (selected?.title ?? t("calendar.workout"))} onClose={() => setSelected(null)}>
         {selected && (
           <div className="form-stack">
-            <StatusBadge>{selected.status}</StatusBadge>
-            <p>{format(parseISO(selected.date), "EEEE, d MMMM yyyy", { locale: vi })}</p>
+            <StatusBadge>{t("calendar." + selected.status)}</StatusBadge>
+            <p>{format(parseISO(selected.date), "EEEE, d MMMM yyyy", { locale: lang === "vi" ? vi : enUS })}</p>
             <p className="muted">
-              {selected.durationMinutes ? `${selected.durationMinutes} phút` : "Không có thời lượng"} · {selected.intensity ?? selected.sport}
+              {selected.durationMinutes ? `${selected.durationMinutes} ${t("calendar.minutes")}` : t("calendar.noDuration")} · {selected.intensity ?? getSportText(selected.sport, t)}
             </p>
           </div>
         )}
       </Modal>
 
-      <Modal open={addOpen} title="Add workout mock" onClose={() => setAddOpen(false)}>
-        <div className="form-stack">
-          <p className="muted">Prototype chỉ mô phỏng thao tác thêm workout, chưa ghi vào lịch thật.</p>
-          <Field label="Tên workout" placeholder="Easy run" />
-          <Field label="Thời lượng" placeholder={formatDuration(1800)} />
-          <Button onClick={() => setAddOpen(false)} type="button">
-            Lưu mock
-          </Button>
-        </div>
-      </Modal>
     </section>
   );
 }

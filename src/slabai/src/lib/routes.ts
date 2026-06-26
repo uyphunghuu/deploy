@@ -17,7 +17,6 @@ export const routes = {
   registerVerify: "/register/verify",
   login: "/login",
   loginVerify: "/login/verify",
-  dashboard: "/dashboard",
   calendar: "/calendar",
   community: "/community",
   roadmap: "/roadmap",
