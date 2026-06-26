@@ -1,85 +1,111 @@
-# SLABAI Backend MVP
+# SLABAI Backend
 
-FastAPI backend for the SLABAI MVP. The backend is isolated under `backend/` and is deployed as a Docker service.
+FastAPI backend for the SLABAI MVP. It owns the protected API, Supabase Auth verification, database access, and the read-only Running AI Coach.
 
 ## Stack
 
-- Python 3.11
+- Python 3.11+
 - FastAPI with Swagger at `/docs`
 - SQLAlchemy 2 async ORM
 - Alembic migrations
 - PostgreSQL on Supabase
 - Supabase Auth JWT verification
 - Pydantic request/response validation
-- Pytest
-- LangGraph + minimal LangChain for the AI Coach MVP
-- Langfuse toggle via `LANGFUSE_ENABLED`
-- Docker
-- Railway deployment
+- LangGraph for the Running AI Coach graph
+- LangChain OpenAI adapter for model calls
+- Langfuse tracing toggle via `LANGFUSE_ENABLED`
+- Pytest, Ruff, and mypy
 
-## Endpoints
+## Key Endpoints
 
-- `GET /health`: lightweight liveness check, no database call.
-- `GET /ready`: readiness check, verifies database connectivity.
+- `GET /health`: lightweight liveness check.
+- `GET /ready`: readiness check with database connectivity.
 - `GET /docs`: Swagger UI.
-- Protected product APIs live under `/api/v1`.
+- `POST /api/v1/ai/coach/chat`: Running AI Coach chat endpoint.
+
+Protected endpoints require `Authorization: Bearer <Supabase access token>`.
+
+## Running AI Coach
+
+The coach lives under `app/ai/running_coach` and is called by `app/api/v1/ai.py`.
+
+Flow:
+
+1. Resolve the authenticated profile from the Supabase JWT.
+2. Validate the chat request and trim frontend-provided history to the MVP limits.
+3. Classify the running intent.
+4. Load only the minimum useful context for that intent.
+5. Let the graph choose read-only tools.
+6. Run deterministic calculations in code where possible.
+7. Apply scope and health safety checks.
+8. Call the configured provider.
+9. Validate structured output and fall back safely when needed.
+
+The agent can read profile, running profile, recent runs, planned workouts, and summary calculations. It must not write database rows, create migrations, or change a training plan automatically.
 
 ## Environment Variables
 
-Do not hard-code secrets. Configure these through `.env` locally and Railway variables in production.
+Configure through `backend/.env` locally and deployment variables in production. Do not hard-code secrets.
 
 Required:
 
-- `APP_NAME`: display name, for example `SLABAI Backend`.
-- `ENVIRONMENT`: `development`, `staging`, or `production`.
-- `API_V1_PREFIX`: default `/api/v1`.
-- `DATABASE_URL`: Supabase Postgres URL using asyncpg, for example `postgresql+asyncpg://...`.
-- `SUPABASE_URL`: Supabase project URL.
-- `SUPABASE_JWKS_URL`: `https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json`.
-- `SUPABASE_JWT_AUDIENCE`: usually `authenticated`.
-- `CORS_ORIGINS`: comma-separated front-end origins, for example `https://app.slabai.com,https://slabai.com`.
+```env
+APP_NAME=SLABAI Backend
+ENVIRONMENT=development
+API_V1_PREFIX=/api/v1
+DATABASE_URL=postgresql+asyncpg://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_JWKS_URL=https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json
+SUPABASE_JWT_AUDIENCE=authenticated
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```
+
+Running AI Coach:
+
+```env
+OPENAI_API_KEY=
+LLM_PROVIDER=openai
+LLM_MODEL=
+LANGFUSE_ENABLED=false
+LANGFUSE_PUBLIC_KEY=
+LANGFUSE_SECRET_KEY=
+LANGFUSE_HOST=https://cloud.langfuse.com
+```
 
 Optional:
 
-- `SUPABASE_JWT_SECRET`: only if the project requires HS256 fallback. Prefer JWKS when available.
-- `OPENAI_API_KEY`: required when using the OpenAI AI Coach provider.
-- `LLM_PROVIDER`: default `openai`.
-- `LLM_MODEL`: default `gpt-4o-mini`.
-- `LANGFUSE_ENABLED`: `true` or `false`.
-- `LANGFUSE_PUBLIC_KEY`
-- `LANGFUSE_SECRET_KEY`
-- `LANGFUSE_HOST`: default `https://cloud.langfuse.com`.
+```env
+SUPABASE_JWT_SECRET=
+DEBUG=false
+```
 
-Never expose `SUPABASE_SERVICE_ROLE_KEY` to the front-end. Do not store passwords, refresh tokens, access tokens, API keys, or service-role keys in application tables.
+`SUPABASE_JWT_SECRET` is only for HS256 fallback projects. Prefer JWKS when available. Never expose service-role keys, model API keys, database passwords, or access tokens to the frontend.
 
-## 1. Run Local
-
-From the repository root:
+## Run Local
 
 ```bash
 cd backend
 cp .env.example .env
 python -m venv .venv
-.venv/Scripts/activate
+. .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
+uvicorn app.main:app --reload
 ```
 
-Use a Supabase Postgres URL with the async SQLAlchemy dialect:
+Use:
 
-```env
-DATABASE_URL=postgresql+asyncpg://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres
+```text
+http://127.0.0.1:8000/health
+http://127.0.0.1:8000/ready
+http://127.0.0.1:8000/docs
 ```
 
-## 2. Run Migration
+## Database
 
-From `backend/`:
+Use the existing Supabase Postgres database. The Running AI Coach does not require new tables.
 
-```bash
-alembic upgrade head
-```
-
-Railway migration command:
+Run migrations from `backend/` only when intentionally changing schema:
 
 ```bash
 alembic upgrade head
@@ -91,50 +117,9 @@ Development seed is manual only:
 python scripts/seed_dev.py
 ```
 
-Do not run `scripts/seed_dev.py` in production.
+Do not run seed commands in production.
 
-## 3. Run Backend
-
-Local development:
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Production startup command:
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
-```
-
-Docker from repository root:
-
-```bash
-docker build -f backend/Dockerfile -t slabai-backend .
-docker run --env-file backend/.env -p 8000:8000 slabai-backend
-```
-
-## 4. Run Frontend
-
-From `src/slabai/`:
-
-```bash
-cp .env.example .env.local
-npm install
-npm run dev
-```
-
-Required front-end values:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
-NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
-```
-
-For production, set `NEXT_PUBLIC_API_BASE_URL` to the Railway backend URL.
-
-## 5. Run Tests
+## Test
 
 Backend checks:
 
@@ -144,70 +129,37 @@ ruff format --check .
 ruff check .
 mypy app
 pytest
+python scripts/evaluate_running_coach.py
 ```
+
+The evaluation script is deterministic by default and does not call an LLM unless `RUN_LLM_JUDGE=true` is set together with judge credentials.
 
 Frontend checks:
 
 ```bash
-cd src/slabai
+cd ../src/slabai
 npm run typecheck
 npm run build
 ```
 
-GitHub Actions runs backend format check, lint, type-check, and tests on backend changes.
+## Safety And MVP Limits
 
-## 6. Deploy Railway
+- Current coach scope is running only.
+- Responses default to Vietnamese and should stay concise.
+- Missing data must be reported; the coach must not invent pace, heart rate, age, weight, or training history.
+- Tool errors should lead to transparent, cautious answers.
+- The coach is not a medical diagnostic tool.
+- For chest pain, abnormal shortness of breath, fainting, severe pain, serious injury, or sustained abnormal heart rhythm, recommend stopping training and seeking appropriate medical support.
 
-Railway config is in the repository root at `railway.toml`.
+## Deployment
 
-Expected Railway behavior:
+Railway config lives at the repository root in `railway.toml`.
+
+Expected production behavior:
 
 - Build with `backend/Dockerfile`.
 - Run pre-deploy migration: `alembic upgrade head`.
-- Start production server: `uvicorn app.main:app --host 0.0.0.0 --port ${PORT}`.
-- Healthcheck path: `/ready`.
+- Start server: `uvicorn app.main:app --host 0.0.0.0 --port ${PORT}`.
+- Healthcheck: `/ready`.
 
-Railway variables to configure:
-
-```env
-APP_NAME=SLABAI Backend
-ENVIRONMENT=production
-API_V1_PREFIX=/api/v1
-DATABASE_URL=postgresql+asyncpg://...
-SUPABASE_URL=https://<project-ref>.supabase.co
-SUPABASE_JWKS_URL=https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json
-SUPABASE_JWT_AUDIENCE=authenticated
-CORS_ORIGINS=https://app.slabai.com,https://slabai.com
-OPENAI_API_KEY=...
-LLM_PROVIDER=openai
-LLM_MODEL=gpt-4o-mini
-LANGFUSE_ENABLED=false
-LANGFUSE_PUBLIC_KEY=
-LANGFUSE_SECRET_KEY=
-LANGFUSE_HOST=https://cloud.langfuse.com
-```
-
-Do not configure or run development seed commands in Railway production.
-
-## 7. Configure Supabase
-
-1. Create or select the Supabase project.
-2. Copy the project URL into `SUPABASE_URL`.
-3. Configure `SUPABASE_JWKS_URL` as `https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json`.
-4. Use the Supabase Postgres connection string for `DATABASE_URL`, converted to `postgresql+asyncpg://`.
-5. Enable email OTP and Google OAuth providers as needed in Supabase Auth.
-6. Add the front-end production URL to Supabase Auth redirect URLs.
-7. Add the same front-end production URL to backend `CORS_ORIGINS`.
-8. Keep the service role key server-side only. It is not required by the current backend MVP.
-
-## Security Notes
-
-- Supabase Auth owns registration, login, sessions, and refresh tokens.
-- Backend verifies bearer JWTs and never returns auth secrets.
-- `profiles.role` supports only `USER` and `ADMIN`.
-- `profiles.status = SUSPENDED` blocks protected API usage.
-- User endpoints are scoped by `user_id`.
-- `/api/v1/admin/*` requires `ADMIN`.
-- Pagination `limit` is capped at 100.
-- CORS origins are environment-driven.
-- AI Agent traces are sanitized and must not include access tokens, full email addresses, secrets, or unnecessary sensitive health data.
+Keep production configuration in environment variables only.

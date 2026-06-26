@@ -7,8 +7,8 @@ from app.services.ai_context import AgentActivity, AgentContext, AgentProfile, A
 
 class FakeProvider:
     def generate(self, system_prompt: str, user_prompt: str) -> str:
-        assert "Do not update any user data" in user_prompt
-        assert "access tokens" in system_prompt.lower()
+        assert "Current athlete message" in user_prompt
+        assert "running only" in system_prompt.lower()
         return (
             "Recommendation: Run 35 minutes easy in Zone 2, then add four relaxed strides.\n"
             "Rationale: The recent activity list is light, so this keeps load conservative."
@@ -30,7 +30,7 @@ def test_ai_agent_workflow_recommends_training_without_db_access() -> None:
 
     assert "Run 35 minutes easy" in result.recommendation
     assert "conservative" in result.rationale
-    assert "Why:" in result.response
+    assert "Run 35 minutes easy" in result.response
 
 
 def test_ai_agent_workflow_surfaces_llm_failure() -> None:
@@ -70,4 +70,3 @@ def _context() -> AgentContext:
 
 def _settings() -> Settings:
     return Settings(DATABASE_URL="sqlite+aiosqlite:///:memory:", OPENAI_API_KEY="test-key")
-

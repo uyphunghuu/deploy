@@ -7,4 +7,3 @@ MAX_LIMIT = 100
 
 LimitQuery = Annotated[int, Query(ge=1, le=MAX_LIMIT)]
 OffsetQuery = Annotated[int, Query(ge=0)]
-

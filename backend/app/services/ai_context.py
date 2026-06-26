@@ -75,4 +75,3 @@ async def build_agent_context(session: AsyncSession, profile: Profile) -> AgentC
             for item in activity_rows
         ],
     )
-

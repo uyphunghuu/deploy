@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any
 
 from app.core.config import Settings
-from app.services.ai_context import AgentContext
 
 
 class LangfuseRecorder:
@@ -26,7 +25,7 @@ class LangfuseRecorder:
         except Exception:
             self.enabled = False
 
-    def record(self, *, goal: str, context: AgentContext, output: dict[str, str]) -> None:
+    def record(self, *, goal: str, context: Any, output: dict[str, str]) -> None:
         if not self.enabled or self._client is None:
             return
 
@@ -44,4 +43,3 @@ class LangfuseRecorder:
             output=output,
             metadata={"agent": "single-agent", "scope": "mvp"},
         )
-

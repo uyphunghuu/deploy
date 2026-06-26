@@ -29,7 +29,7 @@ export function ChatMessageList({ messages, isTyping, onSelectPrompt }: ChatMess
               Xin chào, {copy.demoName.split(" ")[0]}! 👋
             </h3>
             <p className="text-neutral-600 text-sm">
-              Tôi là trợ lý AI Coach của bạn. Tôi có thể giúp bạn phân tích dữ liệu luyện tập, lập kế hoạch hoặc trả lời bất kỳ câu hỏi nào về thể thao.
+              Tôi là trợ lý AI Coach chạy bộ của bạn. Tôi có thể giúp bạn phân tích buổi chạy, khối lượng tập và gợi ý buổi chạy phù hợp.
             </p>
           </div>
           <SuggestedPrompts onSelect={onSelectPrompt} />

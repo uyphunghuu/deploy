@@ -1,17 +1,28 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import TypedDict
+from datetime import date
 
-from langgraph.graph import END, StateGraph
-
+from app.ai.running_coach.graph import RunningCoachRunError, parse_structured_response
+from app.ai.running_coach.prompts import build_prompt_messages
+from app.ai.running_coach.providers import LLMMessage
+from app.ai.running_coach.safety import build_health_note, build_scope_note, redact_sensitive_text
+from app.ai.running_coach.schemas import (
+    RunningActivitySummary,
+    RunningAthleteProfile,
+    RunningCoachContext,
+    RunningCoachRequest,
+    RunningCoachStructuredResponse,
+    RunningSportProfile,
+)
 from app.core.config import Settings
 from app.services.ai_context import AgentContext
 from app.services.langfuse_tracing import LangfuseRecorder
 from app.services.llm_provider import LLMProvider
 
 
-class AgentRunError(RuntimeError):
+class AgentRunError(RunningCoachRunError):
     pass
 
 
@@ -22,30 +33,6 @@ class CoachRecommendation:
     rationale: str
 
 
-class CoachState(TypedDict):
-    goal: str
-    context: AgentContext
-    prompt: str
-    llm_text: str
-    recommendation: str
-    rationale: str
-    response: str
-
-
-SYSTEM_PROMPT = """You are SLABAI's single MVP training coach agent.
-Use only the provided profile, sport preferences, and recent activity summary.
-Return a simple training session or simple plan suggestion.
-Explain briefly why.
-Do not claim to update user data.
-Do not include secrets, access tokens, API keys, or full email addresses.
-Avoid medical claims and keep the advice conservative.
-
-Format:
-Recommendation: ...
-Rationale: ...
-"""
-
-
 def run_coach_agent(
     *,
     goal: str,
@@ -54,114 +41,103 @@ def run_coach_agent(
     llm_provider: LLMProvider,
     langfuse_recorder: LangfuseRecorder | None = None,
 ) -> CoachRecommendation:
-    def prepare_prompt(state: CoachState) -> CoachState:
-        prompt = build_user_prompt(state["goal"], state["context"])
-        return {**state, "prompt": prompt}
-
-    def call_llm(state: CoachState) -> CoachState:
-        try:
-            llm_text = llm_provider.generate(SYSTEM_PROMPT, state["prompt"])
-        except Exception as exc:
-            raise AgentRunError("AI coach model failed to generate a recommendation.") from exc
-        return {**state, "llm_text": llm_text}
-
-    def parse_response(state: CoachState) -> CoachState:
-        recommendation, rationale = parse_llm_text(state["llm_text"])
-        response = f"{recommendation}\n\nWhy: {rationale}"
-        return {
-            **state,
-            "recommendation": recommendation,
-            "rationale": rationale,
-            "response": response,
-        }
-
-    graph = StateGraph(CoachState)
-    graph.add_node("prepare_prompt", prepare_prompt)
-    graph.add_node("call_llm", call_llm)
-    graph.add_node("parse_response", parse_response)
-    graph.set_entry_point("prepare_prompt")
-    graph.add_edge("prepare_prompt", "call_llm")
-    graph.add_edge("call_llm", "parse_response")
-    graph.add_edge("parse_response", END)
-
-    compiled = graph.compile()
-    result = compiled.invoke(
-        {
-            "goal": goal,
-            "context": context,
-            "prompt": "",
-            "llm_text": "",
-            "recommendation": "",
-            "rationale": "",
-            "response": "",
-        }
-    )
-
-    output = CoachRecommendation(
-        response=str(result["response"]),
-        recommendation=str(result["recommendation"]),
-        rationale=str(result["rationale"]),
-    )
+    del settings
+    request = RunningCoachRequest(message=goal, training_goal=goal)
+    running_context = _to_running_context(context)
+    scope_note = build_scope_note(goal)
+    health_note = build_health_note(goal)
+    try:
+        llm_text = _PromptProviderAdapter(llm_provider).generate(
+            build_prompt_messages(
+                request,
+                running_context,
+                intent="general_running",
+                tool_results=[],
+                scope_note=scope_note,
+                health_note=health_note,
+            )
+        )
+        structured = parse_structured_response(
+            redact_sensitive_text(llm_text),
+            context=running_context,
+            tool_results=[],
+            health_note=health_note,
+            scope_note=scope_note,
+        )
+    except Exception as exc:
+        raise AgentRunError(str(exc)) from exc
 
     if langfuse_recorder:
-        langfuse_recorder.record(
-            goal=goal,
-            context=context,
-            output={
-                "recommendation": output.recommendation,
-                "rationale": output.rationale,
-            },
-        )
+        try:
+            langfuse_recorder.record(
+                goal=request.goal_text,
+                context=running_context,
+                output={
+                    "answer": structured.answer,
+                    "intent": structured.intent,
+                    "recommendation": _recommendation_text(structured),
+                    "rationale": structured.summary,
+                },
+            )
+        except Exception:
+            pass
 
-    return output
-
-
-def build_user_prompt(goal: str, context: AgentContext) -> str:
-    sports = context.sports or []
-    recent = context.recent_activities or []
-    sport_lines = [
-        (
-            f"- {item.sport}: goal_mode={item.goal_mode}, focus={item.fitness_focus}, "
-            f"duration_weeks={item.fitness_duration_weeks}, volume={item.volume}, "
-            f"progression={item.build_progression}"
-        )
-        for item in sports
-    ]
-    activity_lines = [
-        (
-            f"- {item.sport} {item.title}: distance_km={item.distance_km}, "
-            f"duration_seconds={item.duration_seconds}, pace_seconds_per_km={item.pace_seconds_per_km}"
-        )
-        for item in recent
-    ]
-
-    return "\n".join(
-        [
-            f"User training goal: {goal}",
-            f"First name: {context.profile.first_name or 'athlete'}",
-            f"Primary sport: {context.profile.primary_sport}",
-            "Sport preferences:",
-            *(sport_lines or ["- none provided"]),
-            "Recent activities:",
-            *(activity_lines or ["- none provided"]),
-            "Give one actionable suggestion. Do not update any user data.",
-        ]
+    return CoachRecommendation(
+        response=structured.answer,
+        recommendation=_recommendation_text(structured),
+        rationale=structured.summary,
     )
 
 
-def parse_llm_text(text: str) -> tuple[str, str]:
-    recommendation = ""
-    rationale = ""
-    for line in text.splitlines():
-        normalized = line.strip()
-        if normalized.lower().startswith("recommendation:"):
-            recommendation = normalized.split(":", 1)[1].strip()
-        elif normalized.lower().startswith("rationale:"):
-            rationale = normalized.split(":", 1)[1].strip()
+class _PromptProviderAdapter:
+    def __init__(self, provider: LLMProvider) -> None:
+        self._provider = provider
 
-    if not recommendation:
-        recommendation = text.strip() or "Take an easy aerobic session today."
-    if not rationale:
-        rationale = "This keeps the suggestion simple and conservative based on the available training context."
-    return recommendation, rationale
+    def generate(self, messages: Sequence[LLMMessage]) -> str:
+        system_prompt = "\n\n".join(item.content for item in messages if item.role == "system")
+        user_prompt = "\n\n".join(f"{item.role}: {item.content}" for item in messages if item.role != "system")
+        return self._provider.generate(system_prompt, user_prompt)
 
+
+def _to_running_context(context: AgentContext) -> RunningCoachContext:
+    return RunningCoachContext(
+        profile=RunningAthleteProfile(
+            first_name=context.profile.first_name,
+            primary_sport=context.profile.primary_sport,
+        ),
+        sports=[
+            RunningSportProfile(
+                sport=item.sport,
+                goal_mode=item.goal_mode,
+                fitness_focus=item.fitness_focus,
+                fitness_duration_weeks=item.fitness_duration_weeks,
+                volume=item.volume,
+                schedule_mode="ai-optimized",
+                heart_rate_bpm=None,
+                pace_seconds_per_km=None,
+                power_watts=None,
+                build_progression=item.build_progression,
+            )
+            for item in context.sports
+        ],
+        recent_activities=[
+            RunningActivitySummary(
+                sport=item.sport,
+                title=item.title,
+                started_on=date.today(),
+                distance_km=item.distance_km,
+                duration_seconds=item.duration_seconds,
+                pace_seconds_per_km=item.pace_seconds_per_km,
+            )
+            for item in context.recent_activities
+        ],
+        active_plans=[],
+        upcoming_sessions=[],
+    )
+
+
+def _recommendation_text(response: RunningCoachStructuredResponse) -> str:
+    if response.recommendations:
+        first = response.recommendations[0]
+        return f"{first.title}: {first.details}"
+    return response.answer

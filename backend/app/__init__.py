@@ -1,2 +1,1 @@
 """SLABAI backend package."""
-
