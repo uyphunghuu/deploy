@@ -33,7 +33,7 @@ async def get_current_profile(
     print(f"DEBUG 401: received token: {credentials.credentials[:10]}...")
     claims = SupabaseJWTVerifier(settings).verify(credentials.credentials)
     print(f"DEBUG 401: claims: {claims}")
-    
+
     try:
         user_id = uuid.UUID(claims.sub)
     except ValueError as exc:
@@ -50,6 +50,27 @@ async def get_current_profile(
         await session.commit()
         await session.refresh(profile)
 
+    # Sync first_name, last_name, and avatar_url from Supabase user_metadata if empty
+    user_metadata = claims.raw.get("user_metadata", {}) if claims.raw else {}
+    changed = False
+    if not profile.first_name:
+        profile.first_name = user_metadata.get("given_name") or user_metadata.get("first_name") or user_metadata.get("full_name") or user_metadata.get("name")
+        if profile.first_name:
+            changed = True
+    if not profile.last_name:
+        profile.last_name = user_metadata.get("family_name") or user_metadata.get("last_name")
+        if profile.last_name:
+            changed = True
+    if not profile.avatar_url:
+        profile.avatar_url = user_metadata.get("avatar_url") or user_metadata.get("picture")
+        if profile.avatar_url:
+            changed = True
+
+    if changed:
+        session.add(profile)
+        await session.commit()
+        await session.refresh(profile)
+
     if profile.status == AccountStatus.SUSPENDED:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is suspended.")
     return profile
@@ -59,4 +80,3 @@ async def require_admin(profile: Profile = Depends(get_current_profile)) -> Prof
     if profile.role != Role.ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin role required.")
     return profile
-

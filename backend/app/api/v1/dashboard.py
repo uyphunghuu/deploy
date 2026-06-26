@@ -62,4 +62,3 @@ async def read_dashboard_summary(
         upcoming_sessions_count=upcoming_sessions or 0,
         active_plans_count=active_plans or 0,
     )
-

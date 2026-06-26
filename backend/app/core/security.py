@@ -83,4 +83,3 @@ async def fetch_jwks_health(settings: Settings) -> dict[str, Any]:
         response = await client.get(str(settings.supabase_jwks_url))
         response.raise_for_status()
     return {"configured": True, "latency_ms": round((time() - started) * 1000)}
-

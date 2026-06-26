@@ -68,4 +68,3 @@ async def read_calendar(
     )
     events.sort(key=lambda event: (event.date, event.title))
     return CalendarResponse(range={"from": date_from, "to": date_to}, events=events)
-

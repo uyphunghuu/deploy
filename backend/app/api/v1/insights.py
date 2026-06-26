@@ -48,4 +48,3 @@ async def read_profiles_zones(
 def _format_pace(seconds_per_km: int) -> str:
     minutes, seconds = divmod(seconds_per_km, 60)
     return f"{minutes}:{seconds:02d}/km"
-
