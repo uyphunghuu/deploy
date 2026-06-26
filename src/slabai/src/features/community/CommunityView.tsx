@@ -11,12 +11,14 @@ import { RouteMap } from "@/components/domain/RouteMap";
 import { formatDuration } from "@/lib/format";
 import type { CommunityPayload } from "@/lib/types";
 import { getCommunity } from "@/services/mockRepository";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export function CommunityView() {
   const [payload, setPayload] = useState<CommunityPayload | null>(null);
   const [status, setStatus] = useState<"loading" | "error" | "success">("loading");
   const [filter, setFilter] = useState<"following" | "all">("following");
   const [following, setFollowing] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     let mounted = true;
@@ -46,11 +48,11 @@ export function CommunityView() {
   }
 
   if (status === "error") {
-    return <EmptyState title="Không tải được Community" description="Thử tải lại để xem feed mock." />;
+    return <EmptyState title={t("community.errorTitle")} description={t("community.errorDesc")} />;
   }
 
   if (!payload || feed.length === 0) {
-    return <EmptyState title="Feed đang trống" description="Khi bạn theo dõi vận động viên, hoạt động của họ sẽ xuất hiện tại đây." />;
+    return <EmptyState title={t("community.emptyTitle")} description={t("community.emptyDesc")} />;
   }
 
   return (
@@ -58,46 +60,46 @@ export function CommunityView() {
       <div className="page-header">
         <div>
           <h2 className="page-title" id="community-title">
-            Community
+            {t("community.title")}
           </h2>
-          <p>Theo dõi hoạt động, thử thách và câu lạc bộ trong cộng đồng SLABAI.</p>
+          <p>{t("community.subtitle")}</p>
         </div>
         <div className="segmented" role="radiogroup" aria-label="Feed filter">
           <button aria-checked={filter === "following"} className="segmented__item" onClick={() => setFilter("following")} role="radio" type="button">
-            Following
+            {t("community.filter.following")}
           </button>
           <button aria-checked={filter === "all"} className="segmented__item" onClick={() => setFilter("all")} role="radio" type="button">
-            All
+            {t("community.filter.all")}
           </button>
         </div>
       </div>
 
       <div className="content-grid content-grid--three">
-        <aside className="content-grid" aria-label="Hồ sơ cộng đồng">
+        <aside className="content-grid" aria-label={t("community.title")}>
           <Card className="activity-card">
             <span className="user-avatar">LD</span>
             <h2>Lâm Demo</h2>
             <div className="card-grid">
               <div>
                 <strong>{payload.profileSummary.following}</strong>
-                <p className="muted">Following</p>
+                <p className="muted">{t("community.profile.following")}</p>
               </div>
               <div>
                 <strong>{payload.profileSummary.followers}</strong>
-                <p className="muted">Followers</p>
+                <p className="muted">{t("community.profile.followers")}</p>
               </div>
               <div>
                 <strong>{payload.profileSummary.activities}</strong>
-                <p className="muted">Activities</p>
+                <p className="muted">{t("community.profile.activities")}</p>
               </div>
               <div>
                 <strong>{payload.profileSummary.streakDays}</strong>
-                <p className="muted">Streak</p>
+                <p className="muted">{t("community.profile.streak")}</p>
               </div>
             </div>
           </Card>
           <Card className="activity-card">
-            <h2>Clubs</h2>
+            <h2>{t("community.clubs")}</h2>
             {payload.clubs.map((club) => (
               <div className="inline-actions" key={club.id}>
                 <StatusBadge>{club.name}</StatusBadge>
@@ -121,46 +123,46 @@ export function CommunityView() {
               <div className="card-grid">
                 <div>
                   <strong>{activity.distanceKm} km</strong>
-                  <p className="muted">Quãng đường</p>
+                  <p className="muted">{t("community.distance")}</p>
                 </div>
                 <div>
                   <strong>{activity.pace}</strong>
-                  <p className="muted">Pace</p>
+                  <p className="muted">{t("community.pace")}</p>
                 </div>
                 <div>
                   <strong>{activity.durationSeconds ? formatDuration(activity.durationSeconds) : "N/A"}</strong>
-                  <p className="muted">Thời gian</p>
+                  <p className="muted">{t("community.time")}</p>
                 </div>
               </div>
               <RouteMap points={activity.routePoints} title={`Route map ${activity.title}`} />
               <footer className="inline-actions">
                 <Button size="sm" type="button" variant="ghost">
                   <Heart size={16} />
-                  Kudos
+                  {t("community.kudos")}
                 </Button>
                 <Button size="sm" type="button" variant="ghost">
                   <MessageCircle size={16} />
-                  Bình luận
+                  {t("community.comment")}
                 </Button>
               </footer>
             </article>
           ))}
         </div>
 
-        <aside className="content-grid" aria-label="Khám phá cộng đồng">
+        <aside className="content-grid" aria-label={t("community.suggestions")}>
           <Card className="activity-card">
-            <h2>Challenges</h2>
+            <h2>{t("community.challenges")}</h2>
             {payload.challenges.map((challenge) => (
               <div key={challenge.id}>
                 <strong>{challenge.title}</strong>
                 <p className="muted">
-                  {challenge.progress}/{challenge.target} ngày
+                  {challenge.progress}/{challenge.target} {t("community.challenges.days")}
                 </p>
               </div>
             ))}
           </Card>
           <Card className="activity-card">
-            <h2>Gợi ý theo dõi</h2>
+            <h2>{t("community.suggestions")}</h2>
             <div className="inline-actions">
               <span className="user-avatar">AN</span>
               <div>
@@ -169,13 +171,18 @@ export function CommunityView() {
               </div>
               <Button onClick={() => setFollowing(true)} size="sm" type="button" variant={following ? "subtle" : "primary"}>
                 <UserPlus size={16} />
-                {following ? "Đã theo dõi" : "Theo dõi"}
+                {following ? t("community.following") : t("community.follow")}
               </Button>
             </div>
           </Card>
           <Card className="activity-card">
             <Clock aria-hidden="true" />
-            <p className="muted">Feed filter hiện tại: {filter === "following" ? "Following" : "All"}</p>
+            <p className="muted">
+              {t("community.filterCurrent").replace(
+                "{filter}",
+                filter === "following" ? t("community.filter.following") : t("community.filter.all")
+              )}
+            </p>
           </Card>
         </aside>
       </div>

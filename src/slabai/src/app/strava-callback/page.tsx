@@ -42,7 +42,9 @@ function StravaCallbackContent() {
         {status === "loading" && (
           <div>
             <h2 className="mb-4 text-xl font-bold">Đang kết nối Strava...</h2>
-            <SkeletonBlock height="20px" width="80%" className="mx-auto" />
+            <div className="mx-auto" style={{ width: "80%" }}>
+              <SkeletonBlock height="20px" />
+            </div>
           </div>
         )}
         {status === "success" && (

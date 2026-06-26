@@ -12,6 +12,7 @@ import { Field } from "@/components/ui/Field";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { emailSchema } from "@/lib/validation";
 import { requestCode, signInWithGoogle } from "@/services/mockRepository";
+import { useLanguage } from "@/lib/LanguageContext";
 
 type EmailFormValues = z.infer<typeof emailSchema>;
 
@@ -24,6 +25,7 @@ export function AuthEmailForm({ intent }: AuthEmailFormProps) {
   const [serverError, setServerError] = useState("");
   const [googleLoading, setGoogleLoading] = useState(false);
   const [remember, setRemember] = useState(true);
+  const { t } = useLanguage();
   const {
     register,
     handleSubmit,
@@ -41,7 +43,7 @@ export function AuthEmailForm({ intent }: AuthEmailFormProps) {
       sessionStorage.setItem("slabai-remember", String(remember));
       router.push(intent === "register" ? "/register/verify" : "/login/verify");
     } catch (error) {
-      setServerError(error instanceof Error ? error.message : "Không thể gửi mã xác thực.");
+      setServerError(error instanceof Error ? error.message : t("auth.sendError"));
     }
   }
 
@@ -51,7 +53,7 @@ export function AuthEmailForm({ intent }: AuthEmailFormProps) {
     try {
       await signInWithGoogle();
     } catch (error) {
-      setServerError(error instanceof Error ? error.message : "Khong the dang nhap bang Google.");
+      setServerError(error instanceof Error ? error.message : t("auth.googleError"));
       setGoogleLoading(false);
     }
   }
@@ -62,7 +64,7 @@ export function AuthEmailForm({ intent }: AuthEmailFormProps) {
     <form className="form-stack" onSubmit={handleSubmit(onSubmit)}>
       <Button loading={googleLoading} onClick={onGoogle} type="button" variant="ghost">
         <Chrome size={18} />
-        {isRegister ? "Đăng ký bằng Google" : "Đăng nhập bằng Google"}
+        {isRegister ? t("auth.googleRegister") : t("auth.googleLogin")}
       </Button>
       <Field
         autoComplete="email"
@@ -73,16 +75,16 @@ export function AuthEmailForm({ intent }: AuthEmailFormProps) {
         {...register("email")}
       />
       {!isRegister && (
-        <Checkbox checked={remember} label="Ghi nhớ đăng nhập trên thiết bị này" onChange={(event) => setRemember(event.target.checked)} />
+        <Checkbox checked={remember} label={t("auth.rememberMe")} onChange={(event) => setRemember(event.target.checked)} />
       )}
       {serverError && <div className="alert" role="alert">{serverError}</div>}
       <Button loading={isSubmitting} type="submit" variant="primary">
-        {isRegister ? "Gửi mã đăng ký" : "Gửi mã đăng nhập"}
+        {isRegister ? t("auth.sendRegisterLink") : t("auth.sendLoginLink")}
       </Button>
       <div className="inline-actions">
-        <span className="muted">{isRegister ? "Đã có tài khoản?" : "Chưa có tài khoản?"}</span>
+        <span className="muted">{isRegister ? t("auth.haveAccount") : t("auth.noAccount")}</span>
         <LinkButton href={isRegister ? "/login" : "/register"} size="sm" variant="subtle">
-          {isRegister ? "Đăng nhập" : "Đăng ký"}
+          {isRegister ? t("auth.login") : t("auth.register")}
         </LinkButton>
       </div>
     </form>

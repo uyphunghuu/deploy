@@ -1,18 +1,27 @@
+"use client";
+
 import { Card } from "@/components/ui/Card";
 import { Logo } from "@/components/ui/Logo";
 import { AuthEmailForm } from "@/features/auth/AuthEmailForm";
+import { LanguageSelector } from "@/components/layout/LanguageSelector";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function RegisterEmailPage() {
+  const { t } = useLanguage();
+
   return (
     <main className="auth-shell">
+      <div style={{ position: "absolute", top: "16px", right: "16px", zIndex: 10 }}>
+        <LanguageSelector />
+      </div>
       <Card className="auth-card">
         <div className="auth-card__header">
           <Logo compact />
-          <h1>Đăng ký bằng email</h1>
-          <p className="muted">Nhận mã xác thực để tạo tài khoản SLABAI demo.</p>
+          <h1>{t("auth.registerEmailTitle")}</h1>
+          <p className="muted">{t("auth.registerEmailSubtitle")}</p>
         </div>
         <AuthEmailForm intent="register" />
-        <p className="legal-copy">Không có email thật nào được gửi trong prototype này.</p>
+        <p className="legal-copy">{t("auth.legalCopy")}</p>
       </Card>
     </main>
   );

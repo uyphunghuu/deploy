@@ -9,6 +9,7 @@ import { Modal } from "@/components/ui/Modal";
 import { SkeletonBlock } from "@/components/ui/Skeleton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { providerLabel } from "@/lib/format";
+import { useLanguage } from "@/lib/LanguageContext";
 import type { Integration, IntegrationProvider } from "@/lib/types";
 import { getIntegrations, setIntegrationStatus } from "@/services/mockRepository";
 import { apiRequest } from "@/services/apiClient";
@@ -18,6 +19,7 @@ export function DevicesAppsView() {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [pending, setPending] = useState<Integration | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     Promise.all([
@@ -25,11 +27,12 @@ export function DevicesAppsView() {
       apiRequest<Record<string, { connected: boolean; athlete_id?: string }>>("/integrations").catch(() => ({}))
     ])
       .then(([mockData, realData]) => {
+        const data = realData as Record<string, { connected: boolean; athlete_id?: string }>;
         const merged = mockData.map(item => {
-          if (realData[item.provider]) {
+          if (data[item.provider]) {
             return {
               ...item,
-              status: realData[item.provider].connected ? "connected" : "not-connected",
+              status: data[item.provider].connected ? "connected" : "not-connected",
             } as Integration;
           }
           return item;
@@ -67,23 +70,23 @@ export function DevicesAppsView() {
       const res = await apiRequest<{ message: string }>("/integrations/strava/sync", { method: "POST" });
       alert(res.message);
     } catch (err: any) {
-      alert("Lỗi đồng bộ: " + (err.message || "Unknown error"));
+      alert(t("devices.syncError") + (err.message || "Unknown error"));
     } finally {
       setSyncing(false);
     }
   }
 
   if (status === "loading" && items.length === 0) return <SkeletonBlock height="420px" />;
-  if (status === "error") return <EmptyState title="Không tải được tích hợp" description="Có lỗi xảy ra khi tải dữ liệu." />;
+  if (status === "error") return <EmptyState title={t("devices.errorLoading")} description={t("devices.errorLoadingDesc")} />;
 
   return (
     <section aria-labelledby="devices-title">
       <div className="page-header">
         <div>
           <h2 className="page-title" id="devices-title">
-            Devices & Apps
+            {t("devices.title")}
           </h2>
-          <p>Mô phỏng Garmin và Coros. Kết nối Strava là thật.</p>
+          <p>{t("devices.subtitle")}</p>
         </div>
       </div>
       <Card className="table-card">
@@ -91,43 +94,51 @@ export function DevicesAppsView() {
           <caption className="sr-only">Integration connections</caption>
           <thead>
             <tr>
-              <th>Provider</th>
-              <th>Status</th>
-              <th>Permissions</th>
-              <th>Action</th>
+              <th>{t("devices.provider")}</th>
+              <th>{t("devices.status")}</th>
+              <th>{t("devices.permissions")}</th>
+              <th>{t("devices.action")}</th>
             </tr>
           </thead>
           <tbody>
             {items.map((item) => (
               <tr key={item.provider}>
-                <td data-label="Provider">
+                <td data-label={t("devices.provider")}>
                   <span className="inline-actions">
                     <PlugZap size={18} />
                     {providerLabel(item.provider)}
                   </span>
                 </td>
-                <td data-label="Status">
+                <td data-label={t("devices.status")}>
                   <StatusBadge tone={item.status === "connected" ? "success" : item.status === "error" ? "orange" : "blue"}>
-                    {item.status}
+                    {item.status === "connected"
+                      ? t("devices.connected")
+                      : item.status === "not-connected"
+                      ? t("devices.notConnected")
+                      : item.status === "connecting"
+                      ? t("devices.connecting")
+                      : t("devices.error")}
                   </StatusBadge>
                 </td>
-                <td data-label="Permissions">{item.permissions.length ? item.permissions.join(", ") : "No permissions yet"}</td>
-                <td data-label="Action">
+                <td data-label={t("devices.permissions")}>
+                  {item.permissions.length ? item.permissions.join(", ") : t("devices.noPermissions")}
+                </td>
+                <td data-label={t("devices.action")}>
                   {item.status === "connected" ? (
                     <div className="flex gap-2">
                       {item.provider === "strava" && (
                         <Button onClick={() => handleSync(item.provider)} size="sm" type="button" disabled={syncing}>
                           <RefreshCw size={14} className={syncing ? "animate-spin mr-1" : "mr-1"} /> 
-                          {syncing ? "Đang đồng bộ..." : "Đồng bộ"}
+                          {syncing ? t("devices.syncing") : t("devices.sync")}
                         </Button>
                       )}
                       <Button onClick={() => setPending(item)} size="sm" type="button" variant="ghost">
-                        Disconnect
+                        {t("devices.disconnect")}
                       </Button>
                     </div>
                   ) : (
                     <Button onClick={() => change(item.provider, "connected")} size="sm" type="button">
-                      Connect
+                      {t("devices.connect")}
                     </Button>
                   )}
                 </td>
@@ -136,11 +147,13 @@ export function DevicesAppsView() {
           </tbody>
         </table>
       </Card>
-      <Modal open={Boolean(pending)} title="Disconnect integration" onClose={() => setPending(null)}>
+      <Modal open={Boolean(pending)} title={t("devices.disconnectTitle")} onClose={() => setPending(null)}>
         <div className="form-stack">
-          <p className="muted">Bạn muốn ngắt kết nối {pending ? providerLabel(pending.provider) : "provider"}?</p>
+          <p className="muted">
+            {t("devices.disconnectConfirm").replace("{provider}", pending ? providerLabel(pending.provider) : "provider")}
+          </p>
           <Button onClick={() => pending && change(pending.provider, "not-connected")} type="button" variant="danger">
-            Disconnect
+            {t("devices.disconnect")}
           </Button>
         </div>
       </Modal>
