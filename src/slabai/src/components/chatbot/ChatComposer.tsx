@@ -2,6 +2,8 @@ import React, { useState, useRef, KeyboardEvent } from "react";
 import { SendHorizontal } from "lucide-react";
 import { Button } from "../ui/Button";
 
+const MAX_CHAT_MESSAGE_CHARS = 2000;
+
 interface ChatComposerProps {
   onSend: (message: string) => void;
   disabled?: boolean;
@@ -49,6 +51,7 @@ export function ChatComposer({ onSend, disabled }: ChatComposerProps) {
           onKeyDown={handleKeyDown}
           placeholder="Hỏi AI Coach về kế hoạch luyện tập..."
           disabled={disabled}
+          maxLength={MAX_CHAT_MESSAGE_CHARS}
           className="flex-1 max-h-[120px] min-h-[24px] bg-transparent border-none resize-none focus:outline-none focus:ring-0 px-2 py-1.5 text-sm text-neutral-900 placeholder:text-neutral-500"
           rows={1}
         />

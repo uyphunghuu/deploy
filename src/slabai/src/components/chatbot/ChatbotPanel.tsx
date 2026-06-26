@@ -3,6 +3,7 @@ import { ChatHeader } from "./ChatHeader";
 import { ChatMessageList } from "./ChatMessageList";
 import { ChatComposer } from "./ChatComposer";
 import { useChat } from "../../hooks/use-chat";
+import { Button } from "../ui/Button";
 
 interface ChatbotPanelProps {
   isOpen: boolean;
@@ -10,7 +11,7 @@ interface ChatbotPanelProps {
 }
 
 export function ChatbotPanel({ isOpen, onClose }: ChatbotPanelProps) {
-  const { messages, isTyping, error, sendMessage, clearChat } = useChat();
+  const { messages, isTyping, error, canRetry, sendMessage, clearChat, retryLastMessage } = useChat();
 
   // Close on escape key
   useEffect(() => {
@@ -48,8 +49,23 @@ export function ChatbotPanel({ isOpen, onClose }: ChatbotPanelProps) {
         {/* Main chat area */}
         <div className="flex-1 overflow-hidden flex flex-col relative">
           {error && (
-            <div className="absolute top-2 left-4 right-4 z-10 bg-status-error-50 border border-status-error-200 text-status-error-700 px-3 py-2 rounded-lg text-sm flex items-start gap-2 shadow-sm">
-              <span className="font-medium">Lỗi:</span> {error}
+            <div className="absolute top-2 left-4 right-4 z-10 bg-status-error-50 border border-status-error-200 text-status-error-700 px-3 py-2 rounded-lg text-sm flex items-start justify-between gap-3 shadow-sm">
+              <div className="flex items-start gap-2">
+                <span className="font-medium">Lỗi:</span>
+                <span>{error}</span>
+              </div>
+              {canRetry && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={retryLastMessage}
+                  disabled={isTyping}
+                  className="h-7 shrink-0 rounded-md px-2 text-status-error-700 hover:text-status-error-800"
+                >
+                  Thử lại
+                </Button>
+              )}
             </div>
           )}
           

@@ -76,12 +76,14 @@ class StravaService:
 
         for act_data in activities_data:
             strava_id = str(act_data.get("id"))
-            
+
             # Check if exists
-            stmt = select(Activity).where(Activity.user_id == user_id, Activity.external_id == strava_id, Activity.source == "strava")
+            stmt = select(Activity).where(
+                Activity.user_id == user_id, Activity.external_id == strava_id, Activity.source == "strava"
+            )
             result = await session.execute(stmt)
             existing = result.scalar_one_or_none()
-            
+
             if existing:
                 continue
 
@@ -105,10 +107,10 @@ class StravaService:
                 started_at=started_at,
                 source="strava",
                 external_id=strava_id,
-                raw_payload=act_data
+                raw_payload=act_data,
             )
             session.add(activity)
             count += 1
-            
+
         await session.commit()
         return count

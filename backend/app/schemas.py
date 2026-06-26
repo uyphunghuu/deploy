@@ -4,7 +4,7 @@ import uuid
 from datetime import date, datetime, timedelta
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 from app.models import AccountStatus, GoalMode, PlanStatus, Role, SessionStatus, SportType
 
@@ -228,9 +228,63 @@ class AdminProfileUpdate(BaseModel):
     status: AccountStatus | None = None
 
 
+AI_CHAT_MAX_MESSAGE_CHARS = 2000
+AI_CHAT_MAX_HISTORY_MESSAGES = 10
+AI_CHAT_MAX_HISTORY_CHARS = 8000
+
+
+class AIChatHistoryMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(max_length=AI_CHAT_MAX_MESSAGE_CHARS)
+
+    @field_validator("content")
+    @classmethod
+    def normalize_content(cls, value: str) -> str:
+        return value.strip()
+
+
 class AIChatRequest(BaseModel):
-    message: str = Field(min_length=1, max_length=2000)
+    message: str = Field(min_length=1, max_length=AI_CHAT_MAX_MESSAGE_CHARS)
     training_goal: str | None = Field(default=None, max_length=500)
+    conversation_id: str | None = Field(default=None, max_length=128)
+    history: list[AIChatHistoryMessage] = Field(
+        default_factory=list,
+        validation_alias=AliasChoices("history", "conversation_history"),
+    )
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    @field_validator("message")
+    @classmethod
+    def normalize_message(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Message must not be empty.")
+        return normalized
+
+    @model_validator(mode="after")
+    def normalize_history(self) -> AIChatRequest:
+        history = [item for item in self.history if item.content]
+        history = history[-AI_CHAT_MAX_HISTORY_MESSAGES:]
+
+        total_chars = sum(len(item.content) for item in history)
+        while history and total_chars > AI_CHAT_MAX_HISTORY_CHARS:
+            removed = history.pop(0)
+            total_chars -= len(removed.content)
+
+        self.history = history
+        return self
+
+
+class AIChatRecommendationItem(BaseModel):
+    title: str
+    details: str
+    priority: Literal["low", "medium", "high"]
+
+
+class AIChatWarning(BaseModel):
+    level: Literal["none", "caution", "urgent"]
+    message: str
 
 
 class AIChatResponse(BaseModel):
@@ -238,3 +292,18 @@ class AIChatResponse(BaseModel):
     recommendation: str
     rationale: str
     trace_enabled: bool
+    answer: str
+    intent: Literal[
+        "workout_advice",
+        "activity_analysis",
+        "plan_question",
+        "recovery",
+        "injury_risk",
+        "general_running",
+        "missing_context",
+    ]
+    summary: str
+    recommendations: list[AIChatRecommendationItem]
+    warning: AIChatWarning
+    missing_data: list[str]
+    suggested_questions: list[str]

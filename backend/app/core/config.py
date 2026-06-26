@@ -20,8 +20,9 @@ class Settings(BaseSettings):
     cors_origins: str | list[str] = []
 
     openai_api_key: str | None = None
+    gemini_api_key: str | None = None
     llm_provider: str = "openai"
-    llm_model: str = "gpt-4o-mini"
+    llm_model: str | None = None
     langfuse_enabled: bool = False
     langfuse_public_key: str | None = None
     langfuse_secret_key: str | None = None
@@ -43,4 +44,4 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()  # type: ignore[call-arg]
+    return Settings()

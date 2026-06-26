@@ -10,9 +10,9 @@ export function SuggestedPrompts({ onSelect }: SuggestedPromptsProps) {
     "Hôm nay tôi nên tập gì?",
     "Phân tích buổi chạy gần nhất",
     "Tôi có đang tập quá sức không?",
-    "Điều chỉnh giáo án tuần này",
+    "Tuần này tôi nên điều chỉnh bài chạy thế nào?",
     "Giải thích các vùng nhịp tim",
-    "Tạo buổi tập bơi cho người mới"
+    "Gợi ý buổi chạy cho người mới"
   ];
 
   return (

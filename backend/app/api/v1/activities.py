@@ -85,4 +85,3 @@ async def delete_activity(
     activity = await get_activity(activity_id, profile, session)
     await session.delete(activity)
     await session.commit()
-

@@ -33,4 +33,4 @@ export const mockResponses: { keywords: string[]; response: string }[] = [
   }
 ];
 
-export const defaultResponse = "Tôi là SLABAI AI Coach. Tôi có thể giúp bạn lập kế hoạch tập luyện, phân tích vùng nhịp tim và theo dõi quá trình phục hồi. Bạn cần tôi hỗ trợ gì hôm nay?";
+export const defaultResponse = "Tôi là SLABAI Running AI Coach. Tôi có thể giúp bạn phân tích buổi chạy, khối lượng tập, pace, nhịp tim và hồi phục. Bạn muốn mình hỗ trợ gì hôm nay?";
