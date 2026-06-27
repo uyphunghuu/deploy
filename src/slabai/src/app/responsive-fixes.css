@@ -530,15 +530,16 @@ canvas {
       linear-gradient(
         90deg,
         #f1f0ff 0%,
-        #f1f0ff 58.4%,
-        #111217 58.4%,
+        #f1f0ff calc(50% + 121px),
+        #111217 calc(50% + 121px),
         #111217 100%
       );
   }
 
   .marketing-grid {
     width: 100%;
-    max-width: none;
+    max-width: var(--site-max-width);
+    margin-inline: auto;
     min-height: 100vh;
     grid-template-rows: clamp(64px, 7.2vh, 76px) minmax(0, 1fr) clamp(70px, 11.5vh, 92px);
   }

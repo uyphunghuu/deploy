@@ -43,3 +43,4 @@ class LangfuseRecorder:
             output=output,
             metadata={"agent": "single-agent", "scope": "mvp"},
         )
+        self._client.flush()
