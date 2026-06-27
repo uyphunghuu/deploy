@@ -73,7 +73,7 @@ function PlaceholderLink({ children }: { children: string }) {
 export function AuthFooter() {
   return (
     <footer className="auth-footer" aria-label="SLABAI footer">
-      <div className="auth-footer__inner container-base">
+      <div className="auth-footer__inner site-container">
         <div className="auth-footer__main">
           <div className="auth-footer__brand">
             <Link aria-label="SLABAI home" className="auth-footer__logo" href={routes.register}>
