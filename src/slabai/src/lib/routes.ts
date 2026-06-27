@@ -7,6 +7,7 @@ import {
   Home,
   MessageCircle,
   Settings2,
+  Store,
   User,
   Watch
 } from "lucide-react";
@@ -70,7 +71,7 @@ export const navGroups: NavGroup[] = [
       { href: routes.profile, label: "Profile", icon: User },
       { href: routes.aiCoachSettings, label: "AI Coach Settings", icon: Settings2 },
       { href: routes.devicesApps, label: "Devices & Apps", icon: Watch },
-      { href: routes.billing, label: "Billing & Subscription", icon: CreditCard }
+      { href: routes.billing, label: "Store", icon: Store }
     ]
   },
   {

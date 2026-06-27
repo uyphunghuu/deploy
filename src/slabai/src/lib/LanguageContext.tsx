@@ -20,7 +20,7 @@ const translations = {
     "nav.profile": "Trang cá nhân",
     "nav.aiCoachSettings": "Cấu hình AI Coach",
     "nav.devicesApps": "Thiết bị & Ứng dụng",
-    "nav.billing": "Thanh toán & Gói cước",
+    "nav.billing": "Cửa hàng",
     "nav.help": "Trung tâm trợ giúp",
     "nav.collapse": "Thu gọn",
     "nav.expand": "Mở rộng",
@@ -97,7 +97,7 @@ const translations = {
 
     // Devices
     "devices.title": "Thiết bị & Ứng dụng",
-    "devices.subtitle": "Mô phỏng Garmin và Coros. Kết nối Strava là thật.",
+    "devices.subtitle": "Mô phỏng Garmin, Coros và UpRace. Kết nối Strava là thật.",
     "devices.provider": "Nhà cung cấp",
     "devices.status": "Trạng thái",
     "devices.permissions": "Quyền truy cập",
@@ -151,7 +151,7 @@ const translations = {
     "coach.style.detailed": "Chi tiết",
     "coach.saving": "Đang lưu...",
     "coach.saved": "Đã lưu",
-    "billing.title": "Thanh toán & Gói cước",
+    "billing.title": "Cửa hàng",
     "billing.subtitle": "Cổng thanh toán chỉ được giả lập trong phiên bản demo này.",
     "billing.subscription": "Gói đăng ký",
     "billing.status": "Trạng thái: ",
@@ -232,7 +232,7 @@ const translations = {
     "nav.profile": "Profile",
     "nav.aiCoachSettings": "AI Coach Settings",
     "nav.devicesApps": "Devices & Apps",
-    "nav.billing": "Billing & Subscription",
+    "nav.billing": "Store",
     "nav.help": "Help Center",
     "nav.collapse": "Collapse",
     "nav.expand": "Expand",
@@ -309,7 +309,7 @@ const translations = {
 
     // Devices
     "devices.title": "Devices & Apps",
-    "devices.subtitle": "Garmin and Coros simulated. Strava integration is real.",
+    "devices.subtitle": "Garmin, Coros and UpRace simulated. Strava integration is real.",
     "devices.provider": "Provider",
     "devices.status": "Status",
     "devices.permissions": "Permissions",
@@ -363,7 +363,7 @@ const translations = {
     "coach.style.detailed": "Detailed",
     "coach.saving": "Saving...",
     "coach.saved": "Saved",
-    "billing.title": "Billing & Subscription",
+    "billing.title": "Store",
     "billing.subtitle": "Payment gateway is simulated in this frontend demo phase only.",
     "billing.subscription": "Subscription",
     "billing.status": "Status: ",

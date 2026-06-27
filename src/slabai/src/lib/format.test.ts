@@ -13,5 +13,6 @@ describe("format helpers", () => {
 
   it("labels providers", () => {
     expect(providerLabel("strava")).toBe("Strava");
+    expect(providerLabel("uprace")).toBe("UpRace");
   });
 });

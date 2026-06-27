@@ -545,7 +545,7 @@
     {
       "id": "ACCOUNT-04",
       "order": 18,
-      "name": "Billing & Subscription",
+      "name": "Store",
       "file": "18-Billing-Subscription.png",
       "route": "/settings/billing",
       "status": "ready",

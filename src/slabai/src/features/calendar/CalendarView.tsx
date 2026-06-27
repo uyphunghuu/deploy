@@ -14,7 +14,7 @@ import {
   subMonths
 } from "date-fns";
 import { vi, enUS } from "date-fns/locale";
-import { BedDouble, ChevronLeft, ChevronRight, Dumbbell, Footprints } from "lucide-react";
+import { BedDouble, ChevronLeft, ChevronRight, Dumbbell, Footprints, ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { Button } from "@/components/ui/Button";
@@ -32,9 +32,10 @@ const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const
 
 function buildCalendarDays(month: Date, range?: CalendarPayload["range"]) {
   const rangeStart = range ? parseISO(range.from) : null;
+  const rangeEnd = range ? parseISO(range.to) : null;
   const showReferenceRange = Boolean(range && rangeStart && isSameMonth(rangeStart, month));
-  const start = showReferenceRange && range ? parseISO(range.from) : startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
-  const end = showReferenceRange && range ? parseISO(range.to) : endOfWeek(endOfMonth(month), { weekStartsOn: 1 });
+  const start = showReferenceRange && rangeStart ? startOfWeek(rangeStart, { weekStartsOn: 1 }) : startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
+  const end = showReferenceRange && rangeEnd ? endOfWeek(rangeEnd, { weekStartsOn: 1 }) : endOfWeek(endOfMonth(month), { weekStartsOn: 1 });
   const days: Date[] = [];
   let cursor = start;
   while (cursor <= end) {
@@ -67,6 +68,7 @@ export function CalendarView() {
   const [status, setStatus] = useState<"loading" | "error" | "success">("loading");
   const [month, setMonth] = useState(() => new Date());
   const [selected, setSelected] = useState<Workout | null>(null);
+  const [isRailCollapsed, setIsRailCollapsed] = useState(false);
   const { lang, t } = useLanguage();
 
   const getSportText = (s: string, trans: (k: string) => string) => {
@@ -132,7 +134,7 @@ export function CalendarView() {
         {t("nav.calendar")}
       </h2>
 
-      <div className="calendar-layout">
+      <div className={`calendar-layout ${isRailCollapsed ? "is-collapsed" : ""}`}>
         <div className="calendar-main">
           <div className="toolbar calendar-toolbar" aria-label="Calendar toolbar">
             <div className="toolbar__group calendar-toolbar__date">
@@ -216,56 +218,126 @@ export function CalendarView() {
           )}
         </div>
 
-        <aside className="activity-rail calendar-rail" aria-label={t("calendar.communityActivities")}>
-          <Card className="calendar-friends-card">
-            <div style={{ fontSize: "0.85em" }}>
-              <div className="calendar-card-header">
-                <h2 style={{ fontSize: "1.15rem" }}>{t("calendar.friendSuggestions")}</h2>
-                <Button size="sm" type="button" variant="ghost" style={{ fontSize: "0.85rem", padding: "2px 6px", height: "auto" }}>
-                  {t("calendar.findFriends")}
-                </Button>
+        <aside 
+          className={`activity-rail calendar-rail ${isRailCollapsed ? "calendar-rail--collapsed" : ""}`} 
+          aria-label={t("calendar.communityActivities")}
+        >
+          {isRailCollapsed ? (
+            <div 
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "var(--slabai-space-4)",
+                width: "100%",
+                background: "var(--slabai-surface)",
+                border: "1px solid var(--slabai-neutral-200)",
+                borderRadius: "var(--slabai-radius-lg)",
+                padding: "var(--slabai-space-4) 0",
+                boxShadow: "var(--slabai-shadow-sm)",
+                minHeight: "100%"
+              }}
+            >
+              <div 
+                style={{ 
+                  writingMode: "vertical-rl", 
+                  textTransform: "uppercase", 
+                  letterSpacing: "0.15em", 
+                  color: "var(--slabai-neutral-500)", 
+                  fontSize: "var(--slabai-font-xs)", 
+                  fontWeight: 800,
+                  margin: "auto 0",
+                  transform: "rotate(180deg)",
+                  userSelect: "none"
+                }}
+              >
+                {t("calendar.communityActivities")}
               </div>
-              <div className="friend-row" style={{ marginTop: "var(--slabai-space-2)" }}>
-                <span className="user-avatar" style={{ width: "28px", height: "28px", minWidth: "28px", fontSize: "10px" }}>BT</span>
-                <div>
-                  <strong style={{ fontSize: "0.95rem" }}>Bảo Trang</strong>
-                  <p className="muted" style={{ fontSize: "0.8rem", margin: 0 }}>{t("calendar.newRunner")}</p>
-                </div>
-                <Button size="sm" type="button" variant="subtle" style={{ padding: "4px 8px", fontSize: "0.75rem", height: "auto" }}>
-                  {t("calendar.follow")}
-                </Button>
-              </div>
+              <Button 
+                onClick={() => setIsRailCollapsed(false)} 
+                type="button" 
+                variant="ghost" 
+                size="sm"
+                aria-label={t("nav.expand")}
+                style={{ width: "36px", height: "36px", padding: 0 }}
+              >
+                <ChevronLeft size={20} />
+              </Button>
             </div>
+          ) : (
+            <Card className="calendar-friends-card" style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: "450px" }}>
+              <div style={{ flex: 1 }}>
+                {/* Suggestions Section */}
+                <div style={{ fontSize: "0.85em" }}>
+                  <div className="calendar-card-header">
+                    <h2 style={{ fontSize: "1.15rem" }}>{t("calendar.friendSuggestions")}</h2>
+                    <Button size="sm" type="button" variant="ghost" style={{ fontSize: "0.85rem", padding: "2px 6px", height: "auto" }}>
+                      {t("calendar.findFriends")}
+                    </Button>
+                  </div>
+                  <div className="friend-row" style={{ marginTop: "var(--slabai-space-2)" }}>
+                    <span className="user-avatar" style={{ width: "28px", height: "28px", minWidth: "28px", fontSize: "10px" }}>BT</span>
+                    <div>
+                      <strong style={{ fontSize: "0.95rem" }}>Bảo Trang</strong>
+                      <p className="muted" style={{ fontSize: "0.8rem", margin: 0 }}>{t("calendar.newRunner")}</p>
+                    </div>
+                    <Button size="sm" type="button" variant="subtle" style={{ padding: "4px 8px", fontSize: "0.75rem", height: "auto" }}>
+                      {t("calendar.follow")}
+                    </Button>
+                  </div>
+                </div>
 
-            <hr style={{ margin: "var(--slabai-space-4) 0", border: 0, borderTop: "1px solid var(--slabai-neutral-200)" }} />
+                <hr style={{ margin: "var(--slabai-space-4) 0", border: 0, borderTop: "1px solid var(--slabai-neutral-200)" }} />
 
-            <div style={{ display: "grid", gap: "var(--slabai-space-4)" }}>
-              <h2 style={{ fontSize: "var(--slabai-font-md)", fontWeight: 800 }}>{t("calendar.communityActivities")}</h2>
-              {community?.feed.map((activity) => (
-                <div
-                  key={activity.id}
-                  style={{
-                    display: "grid",
-                    gap: "var(--slabai-space-2)",
-                    padding: "var(--slabai-space-3)",
-                    border: "1px solid var(--slabai-neutral-200)",
-                    borderRadius: "var(--slabai-radius-md)",
-                    background: "var(--slabai-neutral-50)"
+                {/* Community Section */}
+                <div style={{ display: "grid", gap: "var(--slabai-space-4)" }}>
+                  <h2 style={{ fontSize: "var(--slabai-font-md)", fontWeight: 800 }}>{t("calendar.communityActivities")}</h2>
+                  {community?.feed.map((activity) => (
+                    <div
+                      key={activity.id}
+                      style={{
+                        display: "grid",
+                        gap: "var(--slabai-space-2)",
+                        padding: "var(--slabai-space-3)",
+                        border: "1px solid var(--slabai-neutral-200)",
+                        borderRadius: "var(--slabai-radius-md)",
+                        background: "var(--slabai-neutral-50)"
+                      }}
+                    >
+                      <div className="calendar-card-header" style={{ padding: 0 }}>
+                        <StatusBadge tone="orange">{getSportText(activity.sport, t)}</StatusBadge>
+                        <span className="muted">{format(parseISO(activity.occurredAt), "HH:mm")}</span>
+                      </div>
+                      <h3 style={{ margin: 0, fontSize: "var(--slabai-font-md)" }}>{activity.title}</h3>
+                      <p className="muted" style={{ margin: 0, fontSize: "var(--slabai-font-sm)" }}>
+                        {activity.athleteName} · {activity.pace} · {activity.distanceKm} km
+                      </p>
+                      <RouteMap points={activity.routePoints} title={t("calendar.mapTitle").replace("{title}", activity.title)} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Collapse Button at the bottom */}
+              <div style={{ marginTop: "var(--slabai-space-4)", borderTop: "1px solid var(--slabai-neutral-200)", paddingTop: "var(--slabai-space-3)" }}>
+                <Button 
+                  onClick={() => setIsRailCollapsed(true)} 
+                  type="button" 
+                  variant="ghost" 
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    gap: "var(--slabai-space-2)", 
+                    width: "100%", 
                   }}
                 >
-                  <div className="calendar-card-header" style={{ padding: 0 }}>
-                    <StatusBadge tone="orange">{getSportText(activity.sport, t)}</StatusBadge>
-                    <span className="muted">{format(parseISO(activity.occurredAt), "HH:mm")}</span>
-                  </div>
-                  <h3 style={{ margin: 0, fontSize: "var(--slabai-font-md)" }}>{activity.title}</h3>
-                  <p className="muted" style={{ margin: 0, fontSize: "var(--slabai-font-sm)" }}>
-                    {activity.athleteName} · {activity.pace} · {activity.distanceKm} km
-                  </p>
-                  <RouteMap points={activity.routePoints} title={t("calendar.mapTitle").replace("{title}", activity.title)} />
-                </div>
-              ))}
-            </div>
-          </Card>
+                  <ChevronRight size={18} />
+                  {t("nav.collapse")}
+                </Button>
+              </div>
+            </Card>
+          )}
         </aside>
       </div>
 

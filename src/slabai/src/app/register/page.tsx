@@ -6,39 +6,43 @@ import { Card } from "@/components/ui/Card";
 import { Logo } from "@/components/ui/Logo";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { RegisterOptionsActions } from "@/features/auth/RegisterOptionsActions";
+import { AuthFooter } from "@/components/layout/AuthFooter";
 import { copy } from "@/lib/copy";
 
 export default function RegisterPage() {
   return (
-    <main className="marketing-page">
-      <div className="marketing-grid">
+    <div className="auth-page-with-footer">
+      <main className="marketing-page">
+        <div className="marketing-grid">
         <MarketingHeader />
         <section className="marketing-hero" aria-labelledby="register-heading">
-          <div className="hero-copy" id="ai-coach">
-            <StatusBadge>AI Coach cá nhân hóa</StatusBadge>
-            <h1 id="register-heading">
-              AI giúp bạn
-              <br />
-              tập luyện <span className="brand-gradient-text">tốt hơn</span>
-              <br />
-              <span className="brand-gradient-text">mỗi ngày.</span>
-            </h1>
-            <p>{copy.marketingBody}</p>
-            <div className="inline-actions" aria-label="Nguồn dữ liệu hỗ trợ">
-              <strong>Garmin</strong>
-              <strong>Strava</strong>
-              <strong>Apple Health</strong>
+          <div className="hero-intro">
+            <div className="hero-copy" id="ai-coach">
+              <StatusBadge>AI Coach cá nhân hóa</StatusBadge>
+              <h1 id="register-heading">
+                AI giúp bạn
+                <br />
+                tập luyện <span className="brand-gradient-text">tốt hơn</span>
+                <br />
+                <span className="brand-gradient-text">mỗi ngày.</span>
+              </h1>
+              <p>{copy.marketingBody}</p>
+              <div className="inline-actions" aria-label="Nguồn dữ liệu hỗ trợ">
+                <strong>Garmin</strong>
+                <strong>Strava</strong>
+                <strong>Apple Health</strong>
+              </div>
             </div>
-          </div>
-          <div className="hero-visual" aria-label="Vận động viên đang xem đồng hồ tập luyện">
-            <Image
-              alt=""
-              className="hero-athlete-image"
-              fill
-              priority
-              sizes="(min-width: 1280px) 34vw, 100vw"
-              src="/brand/register-hero-athlete.png"
-            />
+            <div className="hero-visual" aria-label="Vận động viên đang xem đồng hồ tập luyện">
+              <Image
+                alt=""
+                className="hero-athlete-image"
+                fill
+                priority
+                sizes="(min-width: 1280px) 30vw, 100vw"
+                src="/brand/register-hero-athlete.png"
+              />
+            </div>
             <Card className="metric-float" aria-label="Chỉ số tập luyện minh họa">
               <div className="robot-avatar" aria-hidden="true">
                 <Bot size={42} />
@@ -117,6 +121,8 @@ export default function RegisterPage() {
           </div>
         </Card>
       </div>
-    </main>
+      </main>
+      <AuthFooter />
+    </div>
   );
 }
