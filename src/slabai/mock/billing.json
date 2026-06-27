@@ -1,0 +1,9 @@
+{
+  "paymentMethods": [],
+  "subscription": {
+    "status": "trial",
+    "plan": "SLABAI Free",
+    "renewsAt": null
+  },
+  "invoices": []
+}

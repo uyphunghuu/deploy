@@ -17,3 +17,9 @@ build/
 
 # AI logs — tracked structure, ignored content
 .ai-log/*.jsonl
+
+# Node / Frontend
+node_modules/
+.next/
+out/
+

@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
-  // Trigger server rebuild 3
+  reactStrictMode: true
 };
 
 export default nextConfig;

@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "provider": "garmin",
+      "status": "not-connected",
+      "permissions": [],
+      "lastActivityAt": null
+    },
+    {
+      "provider": "strava",
+      "status": "not-connected",
+      "permissions": [],
+      "lastActivityAt": null
+    },
+    {
+      "provider": "coros",
+      "status": "not-connected",
+      "permissions": [],
+      "lastActivityAt": null
+    }
+  ]
+}

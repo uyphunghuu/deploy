@@ -1,0 +1,65 @@
+{
+  "profileSummary": {
+    "following": 23,
+    "followers": 49,
+    "activities": 735,
+    "streakDays": 1
+  },
+  "feed": [
+    {
+      "id": "act_01",
+      "athleteName": "Chu Kim Thang",
+      "sport": "running",
+      "title": "Day 26",
+      "description": "Chạy sáng sớm mà cứ ngỡ giữa trưa",
+      "distanceKm": 5.1,
+      "pace": "7:30/km",
+      "durationSeconds": 2296,
+      "occurredAt": "2026-06-24T05:35:00+07:00",
+      "routePoints": [
+        {
+          "x": 0.05,
+          "y": 0.62
+        },
+        {
+          "x": 0.2,
+          "y": 0.48
+        },
+        {
+          "x": 0.35,
+          "y": 0.55
+        },
+        {
+          "x": 0.52,
+          "y": 0.35
+        },
+        {
+          "x": 0.72,
+          "y": 0.58
+        },
+        {
+          "x": 0.92,
+          "y": 0.44
+        }
+      ]
+    }
+  ],
+  "challenges": [
+    {
+      "id": "ch01",
+      "title": "Chạy đều 7 ngày",
+      "progress": 3,
+      "target": 7
+    }
+  ],
+  "clubs": [
+    {
+      "id": "club01",
+      "name": "SLABAI Runners"
+    },
+    {
+      "id": "club02",
+      "name": "Bơi & Phục hồi"
+    }
+  ]
+}
