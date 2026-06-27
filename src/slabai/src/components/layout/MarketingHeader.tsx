@@ -11,7 +11,7 @@ export function MarketingHeader() {
   const { t } = useLanguage();
 
   return (
-    <header className="marketing-header container-base">
+    <header className="marketing-header site-container">
       <Logo />
       <nav aria-label="Marketing">
         <a href="#ai-coach">AI Coach</a>
