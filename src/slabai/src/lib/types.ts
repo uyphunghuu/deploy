@@ -1,5 +1,5 @@
 export type Sport = "running" | "cycling" | "swimming";
-export type IntegrationProvider = "garmin" | "strava" | "apple-health" | "coros";
+export type IntegrationProvider = "garmin" | "strava" | "apple-health" | "coros" | "uprace";
 
 export interface User {
   id: string;
@@ -99,7 +99,7 @@ export interface CommunityActivity {
   distanceKm?: number;
   pace?: string;
   durationSeconds?: number;
-  routePoints: Array<{ x: number; y: number }>;
+  routePoints: Array<{ lat: number; lng: number }>;
   occurredAt: string;
 }
 

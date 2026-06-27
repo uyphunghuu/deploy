@@ -29,6 +29,7 @@ const planFixture = planJson as unknown as PlanPreferences;
 const communityFixture = communityJson as unknown as CommunityPayload;
 const integrationsFixture = integrationsJson as unknown as { items: Integration[] };
 const billingFixture = billingJson as unknown as BillingPayload;
+const PLAN_PREFERENCES_DRAFT_KEY = "slabai-plan-preferences-draft";
 
 function readStorage<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -112,20 +113,27 @@ export async function saveUser(nextUser: User): Promise<User> {
 }
 
 export async function getPlanPreferences(): Promise<PlanPreferences> {
+  const draft = readStorage<PlanPreferences | null>(PLAN_PREFERENCES_DRAFT_KEY, null);
+  if (draft) return draft;
+
   const sports = await apiRequest<BackendUserSport[]>("/profile/sports");
   return sports[0] ? toPlanPreferences(sports[0]) : planFixture;
 }
 
 export function readPlanPreferences(): PlanPreferences {
-  return planFixture;
+  return readStorage<PlanPreferences>(PLAN_PREFERENCES_DRAFT_KEY, planFixture);
 }
 
 export async function savePlanPreferences(nextPlan: PlanPreferences): Promise<PlanPreferences> {
+  writeStorage(PLAN_PREFERENCES_DRAFT_KEY, nextPlan);
+
   const saved = await apiRequest<BackendUserSport, ReturnType<typeof toUserSportPayload>>("/profile/sports", {
     method: "PUT",
     body: toUserSportPayload(nextPlan)
   });
-  return toPlanPreferences(saved);
+  const savedPlan = toPlanPreferences(saved);
+  writeStorage(PLAN_PREFERENCES_DRAFT_KEY, savedPlan);
+  return savedPlan;
 }
 
 export async function generatePlan(): Promise<{ planId: string; status: "generated"; calendarStart: string }> {

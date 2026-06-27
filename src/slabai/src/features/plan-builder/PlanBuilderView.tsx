@@ -168,6 +168,75 @@ function updateRace(race: RaceGoal, key: keyof RaceGoal, value: string): RaceGoa
   return { ...race, [key]: value };
 }
 
+function formatFitnessFocus(focus: FitnessGoal["focus"], lang: "vi" | "en") {
+  const labels: Record<FitnessGoal["focus"], string> = {
+    "5k": "5K",
+    "10k": "10K",
+    "half-marathon": "Half Marathon",
+    "general-fitness": lang === "vi" ? "Thể lực tổng quát" : "General Fitness",
+    endurance: lang === "vi" ? "Sức bền" : "Endurance"
+  };
+  return labels[focus];
+}
+
+function getGoalReview(plan: PlanPreferences, lang: "vi" | "en") {
+  if (plan.goalMode === "race") {
+    const race = plan.races[0];
+    if (!race) {
+      return {
+        value: lang === "vi" ? "Chưa có race goal" : "No race goal",
+        details: []
+      };
+    }
+    return {
+      value: race.raceName,
+      details: [
+        race.eventType,
+        race.date,
+        `${lang === "vi" ? "Ưu tiên" : "Priority"} ${race.priority}`
+      ]
+    };
+  }
+
+  const goal = plan.fitnessGoal ?? { focus: "5k", durationWeeks: 6 };
+  const weeks = lang === "vi" ? `${goal.durationWeeks} tuần` : `${goal.durationWeeks} weeks`;
+  return {
+    value: formatFitnessFocus(goal.focus, lang),
+    details: [weeks]
+  };
+}
+
+function getVolumeReview(volume: PlanPreferences["volume"], lang: "vi" | "en") {
+  const labels = {
+    low: {
+      value: lang === "vi" ? "Thấp" : "Low",
+      details: [lang === "vi" ? "3 buổi/tuần" : "3 sessions/week"]
+    },
+    mid: {
+      value: lang === "vi" ? "Vừa" : "Mid",
+      details: [lang === "vi" ? "4-5 buổi/tuần" : "4-5 sessions/week"]
+    },
+    high: {
+      value: lang === "vi" ? "Cao" : "High",
+      details: [lang === "vi" ? "6 buổi/tuần" : "6 sessions/week"]
+    }
+  };
+  return labels[volume];
+}
+
+function getAdvancedReview(plan: PlanPreferences, progressionLabel: string) {
+  const details = [
+    plan.thresholds.heartRateBpm ? `HR ${plan.thresholds.heartRateBpm} bpm` : null,
+    plan.thresholds.paceSecondsPerKm ? `Pace ${plan.thresholds.paceSecondsPerKm}s/km` : null,
+    plan.thresholds.powerWatts ? `Power ${plan.thresholds.powerWatts}W` : null
+  ].filter(Boolean);
+
+  return {
+    value: progressionLabel,
+    details
+  };
+}
+
 export function PlanBuilderView({ step, initialMode }: { step: Step; initialMode?: GoalMode }) {
   const router = useRouter();
   const [plan, setPlan] = useState<PlanPreferences | null>(null);
@@ -226,9 +295,21 @@ export function PlanBuilderView({ step, initialMode }: { step: Step; initialMode
 
   const planValue = plan;
   const currentIndex = ["sport", "goals", "schedule", "advanced", "review"].indexOf(step) + 1;
+  const goalReview = getGoalReview(plan, lang);
+  const volumeReview = getVolumeReview(plan.volume, lang);
+  const advancedReview = getAdvancedReview(plan, t("progressions")[plan.buildProgression] || plan.buildProgression);
 
   function update(next: Partial<PlanPreferences>) {
-    setPlan((current) => (current ? { ...current, ...next } : current));
+    setPlan((current) => {
+      if (!current) return current;
+      const nextPlan = { ...current, ...next };
+      try {
+        window.localStorage.setItem("slabai-plan-preferences-draft", JSON.stringify(nextPlan));
+      } catch {
+        // Ignore storage errors; the in-memory wizard state still updates.
+      }
+      return nextPlan;
+    });
   }
 
   async function persist(nextRoute: string) {
@@ -487,11 +568,11 @@ export function PlanBuilderView({ step, initialMode }: { step: Step; initialMode
         <Card className="activity-card">
           <StatusBadge tone="success">{t("readyGenerate")}</StatusBadge>
           <h2>{t("reviewTitle")}</h2>
-          <div className="card-grid">
+          <div className="card-grid plan-review-grid">
             <ReviewItem href={routes.planSport} label={tabLabels[0]} value={t("sportOptions")[plan.sport]?.label || plan.sport} editLabel={t("edit")} />
-            <ReviewItem href={`${routes.planGoals}?mode=${plan.goalMode}`} label={tabLabels[1]} value={plan.goalMode === "race" ? t("raceGoal") : t("fitnessGoal")} editLabel={t("edit")} />
-            <ReviewItem href={routes.planSchedule} label={tabLabels[2]} value={plan.volume.toUpperCase()} editLabel={t("edit")} />
-            <ReviewItem href={routes.planAdvanced} label={tabLabels[3]} value={t("progressions")[plan.buildProgression] || plan.buildProgression} editLabel={t("edit")} />
+            <ReviewItem href={`${routes.planGoals}?mode=${plan.goalMode}`} label={tabLabels[1]} value={goalReview.value} details={goalReview.details} editLabel={t("edit")} />
+            <ReviewItem href={routes.planSchedule} label={tabLabels[2]} value={volumeReview.value} details={volumeReview.details} editLabel={t("edit")} />
+            <ReviewItem href={routes.planAdvanced} label={tabLabels[3]} value={advancedReview.value} details={advancedReview.details} editLabel={t("edit")} />
           </div>
           <p className="muted">{t("reviewDesc")}</p>
           <WizardFooter
@@ -595,11 +676,34 @@ function FitnessGoalEditor({
   );
 }
 
-function ReviewItem({ href, label, value, editLabel }: { href: string; label: string; value: string; editLabel: string }) {
+function ReviewItem({
+  href,
+  label,
+  value,
+  details = [],
+  editLabel
+}: {
+  href: string;
+  label: string;
+  value: string;
+  details?: Array<string | null>;
+  editLabel: string;
+}) {
+  const visibleDetails = details.filter(Boolean);
+
   return (
-    <div className="surface-muted card--padded">
-      <span className="page-kicker">{label}</span>
-      <strong>{value}</strong>
+    <div className="surface-muted card--padded plan-review-item">
+      <div className="plan-review-item__body">
+        <span className="page-kicker">{label}</span>
+        <strong>{value}</strong>
+        {visibleDetails.length > 0 && (
+          <ul>
+            {visibleDetails.map((detail) => (
+              <li key={detail}>{detail}</li>
+            ))}
+          </ul>
+        )}
+      </div>
       <Link href={href}>{editLabel}</Link>
     </div>
   );

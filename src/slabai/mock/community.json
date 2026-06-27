@@ -11,37 +11,87 @@
       "athleteName": "Chu Kim Thang",
       "sport": "running",
       "title": "Day 26",
-      "description": "Chạy sáng sớm mà cứ ngỡ giữa trưa",
+      "description": "Chạy sáng sớm mà cứ ngỡ giữa trưa. Thời tiết bắt đầu oi bức rồi mọi người ơi.",
       "distanceKm": 5.1,
       "pace": "7:30/km",
       "durationSeconds": 2296,
       "occurredAt": "2026-06-24T05:35:00+07:00",
       "routePoints": [
-        {
-          "x": 0.05,
-          "y": 0.62
-        },
-        {
-          "x": 0.2,
-          "y": 0.48
-        },
-        {
-          "x": 0.35,
-          "y": 0.55
-        },
-        {
-          "x": 0.52,
-          "y": 0.35
-        },
-        {
-          "x": 0.72,
-          "y": 0.58
-        },
-        {
-          "x": 0.92,
-          "y": 0.44
-        }
+        { "lat": 21.0285, "lng": 105.8542 },
+        { "lat": 21.0270, "lng": 105.8530 },
+        { "lat": 21.0255, "lng": 105.8550 },
+        { "lat": 21.0268, "lng": 105.8568 },
+        { "lat": 21.0285, "lng": 105.8542 }
       ]
+    },
+    {
+      "id": "act_02",
+      "athleteName": "Lê Minh Triết",
+      "sport": "running",
+      "title": "Chạy dài cuối tuần",
+      "description": "Hoàn thành bài chạy dài quanh Hồ Tây. Thời tiết mát mẻ rất thích hợp để chạy pace nhẹ nhàng giữ nhịp tim Zone 2.",
+      "distanceKm": 15.5,
+      "pace": "6:15/km",
+      "durationSeconds": 5812,
+      "occurredAt": "2026-06-25T07:15:00+07:00",
+      "routePoints": [
+        { "lat": 21.0585, "lng": 105.8080 },
+        { "lat": 21.0620, "lng": 105.8150 },
+        { "lat": 21.0580, "lng": 105.8280 },
+        { "lat": 21.0450, "lng": 105.8320 },
+        { "lat": 21.0380, "lng": 105.8250 },
+        { "lat": 21.0400, "lng": 105.8120 },
+        { "lat": 21.0500, "lng": 105.8050 },
+        { "lat": 21.0585, "lng": 105.8080 }
+      ]
+    },
+    {
+      "id": "act_03",
+      "athleteName": "Nguyễn Hoàng Nam",
+      "sport": "cycling",
+      "title": "Morning ride to Ba Vi",
+      "description": "Chinh phục dốc Đền Thượng sáng thứ 7. Đường ướt nhẹ nhưng leo dốc rất phê, thử thách đùi và tim cực tốt!",
+      "distanceKm": 42.8,
+      "pace": "24.5 km/h",
+      "durationSeconds": 6285,
+      "occurredAt": "2026-06-24T08:30:00+07:00",
+      "routePoints": [
+        { "lat": 21.0815, "lng": 105.3710 },
+        { "lat": 21.0780, "lng": 105.3670 },
+        { "lat": 21.0740, "lng": 105.3650 },
+        { "lat": 21.0690, "lng": 105.3630 },
+        { "lat": 21.0650, "lng": 105.3620 },
+        { "lat": 21.0600, "lng": 105.3610 }
+      ]
+    },
+    {
+      "id": "act_04",
+      "athleteName": "Phạm Quỳnh Chi",
+      "sport": "swimming",
+      "title": "Bơi sải nhẹ nhàng",
+      "description": "Bài bơi cuối ngày giải tỏa áp lực công việc. Khởi động 200m bơi tự do, sau đó thực hiện chuỗi bài 1500m.",
+      "distanceKm": 1.8,
+      "pace": "2:13/100m",
+      "durationSeconds": 2400,
+      "occurredAt": "2026-06-23T18:45:00+07:00",
+      "routePoints": [
+        { "lat": 21.0480, "lng": 105.8220 },
+        { "lat": 21.0485, "lng": 105.8225 },
+        { "lat": 21.0480, "lng": 105.8220 },
+        { "lat": 21.0485, "lng": 105.8225 }
+      ]
+    },
+    {
+      "id": "act_05",
+      "athleteName": "Trần Quốc Bảo",
+      "sport": "strength",
+      "title": "Leg day & Core",
+      "description": "Tập đùi sau và các bài core phục vụ cho thử thách chạy trail tuần sau ở Sa Pa. Cảm giác đùi mỏi nhừ nhưng rất sướng!",
+      "distanceKm": 0,
+      "pace": "--",
+      "durationSeconds": 3600,
+      "occurredAt": "2026-06-23T17:00:00+07:00",
+      "routePoints": []
     }
   ],
   "challenges": [

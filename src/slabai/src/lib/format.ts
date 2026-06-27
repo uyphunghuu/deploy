@@ -18,7 +18,8 @@ export function providerLabel(provider: string): string {
     garmin: "Garmin",
     strava: "Strava",
     "apple-health": "Apple Health",
-    coros: "Coros"
+    coros: "Coros",
+    uprace: "UpRace"
   };
   return labels[provider] ?? provider;
 }
