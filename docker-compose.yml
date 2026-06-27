@@ -1,6 +1,26 @@
 version: "3.8"
-
+ 
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: slabai_postgres
+    environment:
+      POSTGRES_USER: slabai
+      POSTGRES_PASSWORD: slabai_local_secret
+      POSTGRES_DB: slabai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U slabai"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - slabai_network
+
   backend:
     build:
       context: ./backend
@@ -10,6 +30,11 @@ services:
       - "8000:8000"
     env_file:
       - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://slabai:slabai_local_secret@postgres:5432/slabai
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - slabai_network
@@ -30,6 +55,9 @@ services:
     restart: unless-stopped
     networks:
       - slabai_network
+
+volumes:
+  pgdata:
 
 networks:
   slabai_network:
