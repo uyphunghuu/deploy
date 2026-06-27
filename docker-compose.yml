@@ -1,0 +1,107 @@
+version: "3.8"
+
+# ══════════════════════════════════════════════════════════════════
+# SLABAI – Local Development Stack
+#
+# Services:
+#   postgres    — PostgreSQL database (local, replaces Supabase DB)
+#   backend     — FastAPI AI Running Coach (port 8000)
+#   frontend    — Next.js frontend (port 3000)
+#
+# Usage:
+#   1. Copy .env.docker.example to .env.docker and fill in your API keys
+#   2. docker compose up --build
+#
+# Access:
+#   Frontend  →  http://localhost:3000
+#   Backend   →  http://localhost:8000
+#   API Docs  →  http://localhost:8000/docs
+#   DB Admin  →  http://localhost:5050  (pgAdmin, admin@local.dev / admin)
+# ══════════════════════════════════════════════════════════════════
+
+services:
+
+  # ── PostgreSQL (local DB) ─────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: slabai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: slabai
+      POSTGRES_PASSWORD: slabai_local_secret
+      POSTGRES_DB: slabai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U slabai -d slabai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - slabai-net
+
+  # ── pgAdmin (optional DB GUI) ─────────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: slabai-pgadmin
+    restart: unless-stopped
+    profiles: ["tools"]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    networks:
+      - slabai-net
+
+  # ── Backend (FastAPI) ─────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: slabai-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.docker
+    environment:
+      DATABASE_URL: postgresql+asyncpg://slabai:slabai_local_secret@postgres:5432/slabai
+      CORS_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000"
+    volumes:
+      - ./backend:/app/backend:ro
+    networks:
+      - slabai-net
+
+  # ── Frontend (Next.js) ────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./src/slabai
+      dockerfile: Dockerfile
+    container_name: slabai-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.docker
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+      NEXT_PUBLIC_USE_MOCK_CHAT: "false"
+    networks:
+      - slabai-net
+
+# ── Named Volumes ────────────────────────────────────────────────
+volumes:
+  postgres_data:
+
+# ── Network ──────────────────────────────────────────────────────
+networks:
+  slabai-net:
+    driver: bridge
