@@ -188,7 +188,7 @@ class TrainingSessionRead(TrainingSessionCreate):
 
 class CalendarEvent(BaseModel):
     id: uuid.UUID
-    date: date
+    date: datetime | date
     sport: SportType
     title: str
     duration_minutes: int | None = None

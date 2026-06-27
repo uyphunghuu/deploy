@@ -56,7 +56,7 @@ async def read_calendar(
     events.extend(
         CalendarEvent(
             id=item.id,
-            date=item.started_at.date(),
+            date=item.started_at,
             sport=item.sport,
             title=item.title,
             duration_minutes=round(item.duration_seconds / 60) if item.duration_seconds is not None else None,
@@ -66,5 +66,8 @@ async def read_calendar(
         )
         for item in activities
     )
-    events.sort(key=lambda event: (event.date, event.title))
+    events.sort(key=lambda event: (
+        event.date.date() if isinstance(event.date, datetime) else event.date,
+        event.title
+    ))
     return CalendarResponse(range={"from": date_from, "to": date_to}, events=events)

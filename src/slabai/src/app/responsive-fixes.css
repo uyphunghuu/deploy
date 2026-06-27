@@ -137,10 +137,12 @@ canvas {
 }
 
 .marketing-grid {
-  width: min(100%, var(--slabai-content-max));
-  max-width: 100%;
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 3vw, 48px);
   justify-self: center;
-  margin: 0 auto;
+  position: relative;
   min-width: 0;
 }
 
@@ -155,6 +157,7 @@ canvas {
 }
 
 .hero-copy,
+.hero-intro,
 .hero-visual,
 .community-visual,
 .registration-card,
@@ -360,6 +363,7 @@ canvas {
   }
 
   .hero-copy,
+  .hero-intro,
   .hero-visual,
   .registration-card,
   .community-visual {
@@ -373,6 +377,12 @@ canvas {
   .hero-copy {
     max-width: 520px;
     padding: 0;
+  }
+
+  .hero-intro {
+    display: grid;
+    gap: var(--slabai-space-8);
+    justify-self: center;
   }
 
   .hero-copy h1 {
@@ -389,9 +399,7 @@ canvas {
   }
 
   .metric-float {
-    left: var(--slabai-space-6);
-    bottom: var(--slabai-space-6);
-    width: min(300px, calc(100% - var(--slabai-space-12)));
+    display: none;
   }
 
   .registration-card {
@@ -420,16 +428,37 @@ canvas {
 
   .marketing-hero {
     min-height: calc(100vh - var(--slabai-header-height) - var(--slabai-space-20) - var(--slabai-space-8));
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 360px) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.05fr) minmax(320px, 360px) minmax(0, 0.95fr);
+    gap: var(--slabai-space-8);
+  }
+
+  .hero-intro {
+    grid-column: 1;
+    grid-row: 1;
+    display: grid;
+    align-content: space-between;
+    gap: var(--slabai-space-6);
+    min-height: 100%;
+    width: 100%;
   }
 
   .hero-visual {
+    grid-column: auto;
+    grid-row: auto;
+    align-self: end;
+    justify-self: stretch;
+    width: 100%;
+    min-height: 260px;
+    max-height: 320px;
+    overflow: hidden;
+    border-radius: var(--slabai-radius-2xl);
     transform: none;
   }
 
   .metric-float {
     left: var(--slabai-space-6);
-    width: min(calc(var(--slabai-space-20) * 5), calc(100% - var(--slabai-space-12)));
+    bottom: var(--slabai-space-6);
+    width: min(300px, calc(100% - var(--slabai-space-12)));
   }
 
   .registration-card {
@@ -447,5 +476,457 @@ canvas {
 
   .content-grid--three > :last-child {
     grid-column: auto;
+  }
+}
+
+/* Register options screen: align to design/screens/01-Register-Options.png */
+.marketing-page {
+  overflow-x: hidden;
+}
+
+.register-actions {
+  gap: 10px;
+}
+
+.google-register-button,
+.email-register-button {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.google-register-button {
+  background: var(--slabai-neutral-0);
+  border-color: var(--slabai-neutral-200);
+  box-shadow: none;
+}
+
+.google-register-mark {
+  display: inline-grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  background: conic-gradient(from -45deg, #4285f4 0deg 110deg, #34a853 110deg 175deg, #fbbc05 175deg 255deg, #ea4335 255deg 360deg);
+  background-clip: text;
+  color: transparent;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  -webkit-background-clip: text;
+}
+
+.registration-card .legal-copy a {
+  color: var(--slabai-brand-blue-700);
+  font-weight: 800;
+}
+
+@media (min-width: 1280px) {
+  .marketing-page {
+    display: grid;
+    min-height: 100vh;
+    background:
+      linear-gradient(
+        90deg,
+        #f1f0ff 0%,
+        #f1f0ff 58.4%,
+        #111217 58.4%,
+        #111217 100%
+      );
+  }
+
+  .marketing-grid {
+    width: 100%;
+    max-width: none;
+    min-height: 100vh;
+    grid-template-rows: clamp(64px, 7.2vh, 76px) minmax(0, 1fr) clamp(70px, 11.5vh, 92px);
+  }
+
+  .marketing-header {
+    padding: 14px clamp(18px, 2.2vw, 34px) 0;
+  }
+
+  .marketing-header .logo-link {
+    gap: 10px;
+    font-size: 18px;
+  }
+
+  .marketing-header .logo-link img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .marketing-header nav {
+    display: flex;
+    gap: clamp(28px, 3vw, 48px);
+    margin-left: clamp(28px, 3vw, 48px);
+    margin-right: auto;
+    font-size: 13px;
+  }
+
+  .marketing-login-link {
+    min-height: 34px;
+    padding-inline: 0;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    color: var(--slabai-neutral-0);
+    font-size: 13px;
+  }
+
+  .marketing-hero {
+    position: relative;
+    display: block;
+    min-height: 0;
+    padding: 0;
+  }
+
+  .hero-intro {
+    display: contents;
+  }
+
+  .hero-copy {
+    position: absolute;
+    left: clamp(22px, 2.25vw, 34px);
+    top: clamp(18px, 6.7vh, 58px);
+    z-index: 4;
+    width: clamp(275px, 29vw, 420px);
+    max-width: none;
+    gap: clamp(10px, 1.65vh, 18px);
+    padding: 0;
+  }
+
+  .hero-copy .badge {
+    width: fit-content;
+    border-radius: 7px;
+    padding: 4px 9px;
+    background: #c7c4ff;
+    color: var(--slabai-brand-blue-700);
+    font-size: 11px;
+  }
+
+  .hero-copy h1 {
+    max-width: none;
+    font-size: clamp(34px, 3.85vw, 56px);
+    line-height: 1.04;
+    letter-spacing: 0;
+  }
+
+  .hero-copy p {
+    max-width: clamp(250px, 22vw, 330px);
+    font-size: clamp(12px, 0.98vw, 15px);
+    line-height: 1.55;
+  }
+
+  .hero-copy .inline-actions {
+    gap: clamp(14px, 1.8vw, 28px);
+    color: var(--slabai-neutral-950);
+    font-size: clamp(11px, 0.95vw, 13px);
+  }
+
+  .hero-copy .inline-actions strong:nth-child(2) {
+    color: var(--slabai-brand-orange-600);
+  }
+
+  .hero-visual {
+    position: absolute;
+    left: clamp(285px, 29.2vw, 430px);
+    top: clamp(18px, 4.6vh, 48px);
+    z-index: 2;
+    width: clamp(205px, 20.5vw, 300px);
+    height: calc(100% - clamp(18px, 4.6vh, 48px));
+    min-height: 0;
+    max-height: none;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .hero-athlete-image {
+    object-fit: contain;
+    object-position: center bottom;
+  }
+
+  .hero-visual::after {
+    content: none;
+  }
+
+  .metric-float {
+    position: absolute;
+    left: clamp(22px, 2.25vw, 34px);
+    bottom: clamp(4px, 1vh, 12px);
+    z-index: 4;
+    display: grid;
+    width: clamp(290px, 29.5vw, 430px);
+    min-height: clamp(116px, 18vh, 154px);
+    grid-template-columns: clamp(72px, 8vw, 118px) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(12px, 1.2vw, 18px);
+    padding: clamp(12px, 1.4vw, 20px);
+    border: 1px solid color-mix(in srgb, var(--slabai-neutral-0) 62%, var(--slabai-brand-blue-100));
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--slabai-neutral-0) 62%, transparent);
+    box-shadow: none;
+    backdrop-filter: blur(8px);
+  }
+
+  .robot-avatar {
+    width: clamp(66px, 7.2vw, 106px);
+    height: clamp(66px, 7.2vw, 106px);
+    border-radius: 18px;
+  }
+
+  .metric-row {
+    grid-template-columns: 20px minmax(0, 1fr) auto auto;
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .metric-row strong {
+    font-size: 18px;
+  }
+
+  .metric-row .badge {
+    min-width: 38px;
+    justify-content: center;
+    padding: 3px 7px;
+    font-size: 10px;
+  }
+
+  .registration-card {
+    position: absolute;
+    left: 42.6%;
+    top: 50%;
+    z-index: 8;
+    width: clamp(184px, 18.2vw, 262px);
+    min-height: clamp(304px, 56vh, 412px);
+    margin: 0;
+    padding: clamp(18px, 2.05vw, 30px);
+    transform: translateY(-50%);
+    gap: clamp(10px, 1.4vh, 16px);
+    border: 1px solid color-mix(in srgb, var(--slabai-neutral-0) 70%, var(--slabai-brand-blue-100));
+    border-radius: clamp(18px, 2vw, 28px);
+    background: color-mix(in srgb, var(--slabai-neutral-0) 88%, transparent);
+    box-shadow: 0 22px 42px color-mix(in srgb, var(--slabai-neutral-950) 15%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .registration-card .logo-link {
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .registration-card .logo-link img {
+    width: clamp(62px, 7.2vw, 104px);
+    height: clamp(62px, 7.2vw, 104px);
+  }
+
+  .registration-card h2 {
+    margin: 0;
+    font-size: clamp(20px, 2.1vw, 30px);
+  }
+
+  .registration-card p {
+    margin: 0;
+  }
+
+  .registration-card > div p {
+    font-size: clamp(10px, 0.9vw, 13px);
+    line-height: 1.55;
+  }
+
+  .member-link {
+    font-size: clamp(10px, 0.9vw, 13px);
+  }
+
+  .google-register-button,
+  .email-register-button {
+    min-height: clamp(30px, 5.25vh, 44px);
+    border-radius: 7px;
+    font-size: clamp(11px, 0.95vw, 14px);
+  }
+
+  .legal-copy {
+    font-size: clamp(9px, 0.78vw, 11px);
+    line-height: 1.55;
+  }
+
+  .community-visual {
+    position: absolute;
+    inset: 0 0 0 auto;
+    z-index: 1;
+    width: 41.6%;
+    min-height: 0;
+    margin: 0;
+    border-radius: 0;
+    padding: clamp(84px, 15.5vh, 130px) clamp(34px, 6.5vw, 92px) 0 clamp(64px, 6.5vw, 96px);
+    align-content: start;
+    background: var(--slabai-neutral-950);
+  }
+
+  .community-image {
+    object-position: center center;
+  }
+
+  .community-visual::after {
+    background:
+      linear-gradient(90deg, color-mix(in srgb, var(--slabai-neutral-950) 78%, transparent), transparent 64%),
+      linear-gradient(0deg, color-mix(in srgb, var(--slabai-neutral-950) 40%, transparent), transparent 54%);
+  }
+
+  .community-visual .badge {
+    width: fit-content;
+    border-radius: 7px;
+    padding: 5px 11px;
+    background: var(--slabai-brand-orange-600);
+    color: var(--slabai-neutral-0);
+    font-size: 11px;
+  }
+
+  .community-visual h2 {
+    max-width: clamp(280px, 29vw, 420px);
+    margin: clamp(16px, 2vh, 24px) 0 clamp(10px, 1.3vh, 16px);
+    font-size: clamp(28px, 3vw, 42px);
+    line-height: 1.12;
+  }
+
+  .community-visual p {
+    max-width: clamp(245px, 23vw, 330px);
+    font-size: clamp(13px, 1vw, 15px);
+    line-height: 1.65;
+  }
+
+  .social-proof {
+    z-index: 9;
+    height: clamp(62px, 9.8vh, 82px);
+    min-height: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    align-items: center;
+    margin: 0 clamp(18px, 2vw, 32px) clamp(0px, 0.8vh, 10px);
+    padding: 0 clamp(34px, 4vw, 62px);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--slabai-neutral-0) 82%, transparent);
+    box-shadow: none;
+    backdrop-filter: blur(14px);
+  }
+
+  .social-proof > div {
+    min-height: 36px;
+    border-right: 1px solid var(--slabai-neutral-200);
+  }
+
+  .social-proof > div:nth-child(3),
+  .social-proof > div:last-child {
+    border-right: 0;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  .marketing-grid {
+    grid-template-rows: auto auto auto;
+  }
+
+  .marketing-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+    align-items: center;
+    gap: var(--slabai-space-6);
+    padding: var(--slabai-space-6);
+  }
+
+  .hero-intro {
+    display: grid;
+    grid-column: 1;
+    gap: var(--slabai-space-6);
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .registration-card {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    width: min(100%, 360px);
+  }
+
+  .hero-visual {
+    min-height: 340px;
+  }
+
+  .metric-float {
+    display: grid;
+    position: relative;
+    left: auto;
+    bottom: auto;
+    width: 100%;
+    grid-template-columns: 96px minmax(0, 1fr);
+    background: color-mix(in srgb, var(--slabai-neutral-0) 72%, transparent);
+  }
+
+  .community-visual {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .marketing-page {
+    background: linear-gradient(160deg, var(--slabai-neutral-50), var(--slabai-brand-blue-50));
+  }
+
+  .marketing-header {
+    padding: var(--slabai-space-4) var(--slabai-space-5);
+  }
+
+  .marketing-hero {
+    display: grid;
+    gap: var(--slabai-space-5);
+    padding: var(--slabai-space-4) var(--slabai-space-5) var(--slabai-space-6);
+  }
+
+  .hero-intro {
+    display: grid;
+    gap: var(--slabai-space-5);
+    width: 100%;
+  }
+
+  .hero-copy {
+    width: 100%;
+  }
+
+  .hero-copy h1 {
+    font-size: var(--slabai-font-4xl);
+  }
+
+  .hero-visual {
+    min-height: 300px;
+  }
+
+  .metric-float {
+    display: none;
+  }
+
+  .registration-card {
+    width: 100%;
+    max-width: 380px;
+    justify-self: center;
+    order: -1;
+  }
+
+  .google-register-button,
+  .email-register-button {
+    min-height: 48px;
+  }
+
+  .community-visual {
+    min-height: 280px;
+    padding: var(--slabai-space-6);
+  }
+
+  .social-proof {
+    grid-template-columns: 1fr;
+    margin: 0 var(--slabai-space-5) var(--slabai-space-5);
+    padding: var(--slabai-space-5);
   }
 }
