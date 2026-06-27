@@ -1,6 +1,7 @@
 "use client";
 
-import { Chrome } from "lucide-react";
+import Link from "next/link";
+import type { MouseEvent } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { LinkButton } from "@/components/ui/LinkButton";
@@ -18,17 +19,31 @@ export function RegisterOptionsActions() {
     }
   }
 
+  function preventPlaceholderNavigation(event: MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+  }
+
   return (
-    <div className="form-stack">
-      <Button loading={loading} onClick={registerWithGoogle} type="button" variant="ghost">
-        <Chrome size={18} />
+    <div className="form-stack register-actions">
+      <Button className="google-register-button" loading={loading} onClick={registerWithGoogle} type="button" variant="ghost">
+        <span aria-hidden="true" className="google-register-mark">
+          G
+        </span>
         Đăng ký bằng Google
       </Button>
-      <LinkButton href="/register/email" size="lg" variant="gradient">
+      <LinkButton className="email-register-button" href="/register/email" size="lg" variant="gradient">
         Đăng ký bằng email
       </LinkButton>
       <p className="legal-copy">
-        Khi tiếp tục, bạn đồng ý với Điều khoản dịch vụ và Chính sách quyền riêng tư của SLABAI.
+        Khi tiếp tục, bạn đồng ý với{" "}
+        <Link href="#" onClick={preventPlaceholderNavigation}>
+          Điều khoản dịch vụ
+        </Link>{" "}
+        và{" "}
+        <Link href="#" onClick={preventPlaceholderNavigation}>
+          Chính sách quyền riêng tư
+        </Link>{" "}
+        của chúng tôi.
       </p>
     </div>
   );

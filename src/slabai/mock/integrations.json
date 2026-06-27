@@ -17,6 +17,12 @@
       "status": "not-connected",
       "permissions": [],
       "lastActivityAt": null
+    },
+    {
+      "provider": "uprace",
+      "status": "not-connected",
+      "permissions": [],
+      "lastActivityAt": null
     }
   ]
 }

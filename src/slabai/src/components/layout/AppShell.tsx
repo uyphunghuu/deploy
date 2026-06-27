@@ -21,7 +21,7 @@ const getNavKey = (label: string) => {
   if (label === "Profile") return "nav.profile";
   if (label === "AI Coach Settings") return "nav.aiCoachSettings";
   if (label === "Devices & Apps") return "nav.devicesApps";
-  if (label === "Billing & Subscription") return "nav.billing";
+  if (label === "Store") return "nav.billing";
   if (label === "Help Center") return "nav.help";
   return label;
 };
@@ -139,49 +139,51 @@ export function AppShell({ children }: AppShellProps) {
       </aside>
       <div className="app-main">
         <header className="topbar">
-          <div className="topbar__left">
-            <Button aria-label="Mở menu" className="topbar__menu" iconOnly onClick={() => setOpen(true)} type="button" variant="ghost">
-              <Menu size={20} />
-            </Button>
-            <div>
-              <h1>{pageTitle ? t(getNavKey(pageTitle)) : ""}</h1>
+          <div className="topbar__inner">
+            <div className="topbar__left">
+              <Button aria-label="Mở menu" className="topbar__menu" iconOnly onClick={() => setOpen(true)} type="button" variant="ghost">
+                <Menu size={20} />
+              </Button>
+              <div>
+                <h1>{pageTitle ? t(getNavKey(pageTitle)) : ""}</h1>
+              </div>
             </div>
-          </div>
-          <div className="topbar__actions">
-            <LanguageSelector />
+            <div className="topbar__actions">
+              <LanguageSelector />
 
-            <Button aria-label="Thông báo" iconOnly type="button" variant="ghost">
-              <Bell size={18} />
-            </Button>
-            <div
-              className="user-menu-wrapper"
-              onMouseEnter={() => setShowDropdown(true)}
-              onMouseLeave={() => setShowDropdown(false)}
-            >
-              <button className="user-menu" type="button" aria-expanded={showDropdown}>
-                <span>{copy.demoName}</span>
-                <span className="user-avatar" aria-hidden="true">
-                  LD
-                </span>
-                <ChevronDown size={16} className={`user-menu__arrow ${showDropdown ? "user-menu__arrow--rotated" : ""}`} />
-              </button>
-              {showDropdown && (
-                <div className="user-dropdown">
-                  <Link href={routes.community} className="user-dropdown__item">
-                    <Users size={16} />
-                    <span>{t("calendar.findFriends")}</span>
-                  </Link>
-                  <Link href={routes.profile} className="user-dropdown__item">
-                    <User size={16} />
-                    <span>{t("nav.profile")}</span>
-                  </Link>
-                  <hr className="user-dropdown__divider" />
-                  <button onClick={handleLogout} className="user-dropdown__item user-dropdown__item--danger" type="button">
-                    <LogOut size={16} />
-                    <span>{t("logout")}</span>
-                  </button>
-                </div>
-              )}
+              <Button aria-label="Thông báo" iconOnly type="button" variant="ghost">
+                <Bell size={18} />
+              </Button>
+              <div
+                className="user-menu-wrapper"
+                onMouseEnter={() => setShowDropdown(true)}
+                onMouseLeave={() => setShowDropdown(false)}
+              >
+                <button className="user-menu" type="button" aria-expanded={showDropdown}>
+                  <span>{copy.demoName}</span>
+                  <span className="user-avatar" aria-hidden="true">
+                    LD
+                  </span>
+                  <ChevronDown size={16} className={`user-menu__arrow ${showDropdown ? "user-menu__arrow--rotated" : ""}`} />
+                </button>
+                {showDropdown && (
+                  <div className="user-dropdown">
+                    <Link href={routes.community} className="user-dropdown__item">
+                      <Users size={16} />
+                      <span>{t("calendar.findFriends")}</span>
+                    </Link>
+                    <Link href={routes.profile} className="user-dropdown__item">
+                      <User size={16} />
+                      <span>{t("nav.profile")}</span>
+                    </Link>
+                    <hr className="user-dropdown__divider" />
+                    <button onClick={handleLogout} className="user-dropdown__item user-dropdown__item--danger" type="button">
+                      <LogOut size={16} />
+                      <span>{t("logout")}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </header>

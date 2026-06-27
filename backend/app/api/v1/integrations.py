@@ -30,6 +30,7 @@ async def get_integrations(
         "strava": {"connected": False},
         "garmin": {"connected": False},
         "coros": {"connected": False},
+        "uprace": {"connected": False},
     }
 
     for cred in credentials:

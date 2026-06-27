@@ -18,9 +18,20 @@
 
   .marketing-hero {
     grid-template-columns:
-      minmax(0, 1fr)
+      minmax(0, 1.05fr)
       minmax(320px, 360px)
-      minmax(0, 1fr);
+      minmax(0, 0.95fr);
+    gap: var(--slabai-space-8);
+  }
+
+  .hero-intro {
+    grid-column: 1;
+    grid-row: 1;
+    display: grid;
+    align-content: space-between;
+    gap: var(--slabai-space-6);
+    min-width: 0;
+    min-height: 100%;
   }
 
   .hero-copy {
@@ -38,8 +49,16 @@
   }
 
   .hero-visual {
-    width: 54%;
-    overflow: visible;
+    grid-column: auto;
+    grid-row: auto;
+    align-self: end;
+    justify-self: stretch;
+    width: 100%;
+    min-height: 260px;
+    max-height: 320px;
+    overflow: hidden;
+    border-radius: var(--slabai-radius-2xl);
+    background: var(--slabai-brand-blue-50);
     transform: none;
   }
 
@@ -53,12 +72,7 @@
   }
 
   .metric-float {
-    left: var(--slabai-space-6);
-    bottom: var(--slabai-space-16);
-    width: min(calc(var(--slabai-space-20) * 5), calc(100% - var(--slabai-space-12)));
-    z-index: 3;
-    background: var(--slabai-neutral-0);
-    box-shadow: var(--slabai-shadow-lg);
+    display: none;
   }
 
   .registration-card {
