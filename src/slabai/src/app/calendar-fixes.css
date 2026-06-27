@@ -240,7 +240,9 @@
 
 @media (min-width: 1280px) {
   .calendar-layout {
-    grid-template-columns: minmax(0, 1fr) 320px;
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 16px;
   }
 }
 

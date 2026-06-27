@@ -738,8 +738,16 @@ button:disabled {
 
 @media (min-width: 1280px) {
   .app-shell {
-    grid-template-columns: var(--slabai-sidebar-expanded) 1fr;
+    width: min(calc(100% - 32px), 1720px);
+    margin-inline: auto;
+    grid-template-columns: 196px minmax(0, 1fr);
     transition: grid-template-columns var(--slabai-motion-normal) var(--slabai-ease-standard);
+  }
+
+  .topbar__inner,
+  .app-content__inner {
+    width: calc(100% - (var(--page-gutter) * 2));
+    max-width: none;
   }
 
   .app-shell[data-collapsed="true"] {
@@ -748,9 +756,9 @@ button:disabled {
 
   .sidebar {
     position: sticky;
-    top: 0;
+    inset: 0 auto auto auto; /* Clear mobile inset, explicitly set top: 0 */
     height: 100vh;
-    width: var(--slabai-sidebar-expanded);
+    width: 196px;
     transform: none;
     transition: width var(--slabai-motion-normal) var(--slabai-ease-standard);
   }
@@ -2125,7 +2133,9 @@ button:disabled {
 
 @media (min-width: 1280px) {
   .calendar-layout {
-    grid-template-columns: minmax(0, 1fr) 320px;
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 16px;
     transition: grid-template-columns var(--slabai-motion-standard) var(--slabai-ease-standard);
   }
 
