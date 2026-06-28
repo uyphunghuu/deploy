@@ -47,7 +47,10 @@ def run_agent_workflow(
     if not config.OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY is not set. Please define it in your environment or .env file.")
 
-    client = OpenAI(api_key=config.OPENAI_API_KEY)
+    client_kwargs = {"api_key": config.OPENAI_API_KEY}
+    if config.OPENAI_BASE_URL:
+        client_kwargs["base_url"] = config.OPENAI_BASE_URL
+    client = OpenAI(**client_kwargs)
     start_time = time.time()
 
     # ── Log params vào MLflow ──────────────────────────────────────────────────
@@ -102,6 +105,7 @@ def run_agent_workflow(
         tools=tools,
         tool_choice="auto",
         temperature=temperature,
+        max_tokens=500,
     )
 
     response_message = response.choices[0].message
@@ -138,6 +142,7 @@ def run_agent_workflow(
             model=model,
             messages=messages,
             temperature=temperature,
+            max_tokens=500,
         )
 
         final_answer = second_response.choices[0].message.content

@@ -1,3 +1,4 @@
+import time
 import phoenix as px
 from phoenix.otel import register
 from src import config
@@ -7,6 +8,10 @@ def init_instrumentation():
     Initializes OpenTelemetry tracing with auto-instrumentation for Arize Phoenix.
     If running locally without an API Key, it will launch the local Phoenix server first.
     """
+    # Fix Python 3.11 compatibility with IPython
+    if not hasattr(time, "clock"):
+        time.clock = time.perf_counter
+
     # 1. Start local Phoenix server if endpoint is localhost and PHOENIX_API_KEY is not set
     if not config.PHOENIX_API_KEY and "localhost" in config.PHOENIX_COLLECTOR_ENDPOINT:
         print("\n[Phoenix] Starting local Arize Phoenix server...")
@@ -27,6 +32,7 @@ def init_instrumentation():
         project_name=config.PHOENIX_PROJECT_NAME,
         endpoint=config.PHOENIX_COLLECTOR_ENDPOINT,
         api_key=config.PHOENIX_API_KEY if config.PHOENIX_API_KEY else None,
+        protocol="http/protobuf",
         auto_instrument=True
     )
     

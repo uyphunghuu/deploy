@@ -6,6 +6,7 @@ load_dotenv()
 
 # OpenAI Config
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "")
 
 # Arize Phoenix Config
 PHOENIX_PROJECT_NAME = os.getenv("PHOENIX_PROJECT_NAME", "phoenix-demo-agent")
