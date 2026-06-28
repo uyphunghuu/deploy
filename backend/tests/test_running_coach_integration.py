@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
 import pytest
+from conftest import TEST_USER_ID
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,7 +11,6 @@ from app.api.deps import get_session
 from app.core.config import Settings, get_settings
 from app.main import app
 from app.models import Activity, Profile, SportType
-from tests.conftest import TEST_USER_ID
 
 
 @pytest.mark.asyncio

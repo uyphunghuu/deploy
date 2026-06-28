@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import admin, activities, ai, calendar, dashboard, insights, profiles, training, integrations
+from app.api.v1 import activities, admin, ai, calendar, dashboard, insights, integrations, profiles, training
 
 api_router = APIRouter()
 api_router.include_router(profiles.router, prefix="/profile", tags=["profile"])

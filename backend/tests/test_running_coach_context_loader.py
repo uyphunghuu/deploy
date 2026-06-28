@@ -1,11 +1,11 @@
 from datetime import UTC, date, datetime, timedelta
 
 import pytest
+from conftest import OTHER_USER_ID, TEST_USER_ID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.running_coach.context_loader import context_load_options_for_intent, load_running_coach_context
 from app.models import Activity, GoalMode, PlanStatus, Profile, SportType, TrainingPlan, TrainingSession, UserSport
-from tests.conftest import OTHER_USER_ID, TEST_USER_ID
 
 
 @pytest.mark.asyncio

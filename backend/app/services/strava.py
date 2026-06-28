@@ -1,12 +1,13 @@
-import httpx
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
-from sqlalchemy.ext.asyncio import AsyncSession
+
+import httpx
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
-from app.models import Activity, SportType, IntegrationCredential
+from app.models import Activity, SportType
 
 STRAVA_OAUTH_URL = "https://www.strava.com/oauth/token"
 STRAVA_API_URL = "https://www.strava.com/api/v3"

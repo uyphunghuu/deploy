@@ -5,7 +5,6 @@ from collections.abc import AsyncIterator
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings, get_settings
@@ -54,7 +53,13 @@ async def get_current_profile(
     user_metadata = claims.raw.get("user_metadata", {}) if claims.raw else {}
     changed = False
     if not profile.first_name:
-        profile.first_name = user_metadata.get("given_name") or user_metadata.get("first_name") or user_metadata.get("full_name") or user_metadata.get("name")
+        name = (
+            user_metadata.get("given_name")
+            or user_metadata.get("first_name")
+            or user_metadata.get("full_name")
+            or user_metadata.get("name")
+        )
+        profile.first_name = name
         if profile.first_name:
             changed = True
     if not profile.last_name:

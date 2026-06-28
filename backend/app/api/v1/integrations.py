@@ -1,15 +1,15 @@
-from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import RedirectResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from datetime import UTC, datetime
 from urllib.parse import urlencode
+
+import httpx
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_profile, get_db
 from app.core.config import get_settings
-from app.models import Profile, IntegrationCredential
+from app.models import IntegrationCredential, Profile
 from app.services.strava import StravaService
-import httpx
 
 router = APIRouter()
 settings = get_settings()
@@ -73,9 +73,9 @@ async def strava_callback(
     try:
         token_data = await strava_service.exchange_token(code)
     except httpx.HTTPStatusError as e:
-        raise HTTPException(status_code=400, detail=f"Failed to exchange token: {e.response.text}")
+        raise HTTPException(status_code=400, detail=f"Failed to exchange token: {e.response.text}") from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
     athlete = token_data.get("athlete", {})
     athlete_id = str(athlete.get("id"))
@@ -85,7 +85,7 @@ async def strava_callback(
 
     expires_at = None
     if expires_at_ts:
-        expires_at = datetime.fromtimestamp(expires_at_ts, tz=timezone.utc)
+        expires_at = datetime.fromtimestamp(expires_at_ts, tz=UTC)
 
     # Check if we already have credentials for this user and provider
     stmt = select(IntegrationCredential).where(
@@ -137,24 +137,24 @@ async def strava_sync(
         raise HTTPException(status_code=400, detail="Strava not connected")
 
     # Check if token is expired, refresh if needed
-    if cred.expires_at and cred.expires_at < datetime.now(timezone.utc):
+    if cred.expires_at and cred.expires_at < datetime.now(UTC):
         try:
             token_data = await strava_service.refresh_token(cred.refresh_token)
             cred.access_token = token_data.get("access_token")
             cred.refresh_token = token_data.get("refresh_token")
             expires_at_ts = token_data.get("expires_at")
             if expires_at_ts:
-                cred.expires_at = datetime.fromtimestamp(expires_at_ts, tz=timezone.utc)
+                cred.expires_at = datetime.fromtimestamp(expires_at_ts, tz=UTC)
             db.add(cred)
             await db.commit()
-        except Exception as e:
-            raise HTTPException(status_code=401, detail="Failed to refresh Strava token. Please reconnect.")
+        except Exception:
+            raise HTTPException(status_code=401, detail="Failed to refresh Strava token. Please reconnect.") from None
 
     try:
         count = await strava_service.sync_activities(db, current_user.id, cred.access_token)
     except httpx.HTTPStatusError as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch from Strava: {e.response.text}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch from Strava: {e.response.text}") from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
     return {"message": f"Synced {count} activities"}
