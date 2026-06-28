@@ -1,0 +1,181 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - ".ai-log/**"
+  pull_request:
+    branches: [main, staging]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+
+jobs:
+  # ── Job 1: Lint Python (Root Agent + Backend) ─────────────────────
+  lint-python:
+    name: Lint Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install ruff
+        run: pip install ruff>=0.5.5
+
+      - name: Lint src/
+        run: ruff check src/
+
+      - name: Lint backend/ (app + tests)
+        run: ruff check backend/app/ backend/tests/
+
+      - name: Check format
+        run: ruff format --check src/ backend/app/ backend/tests/
+
+  # ── Job 2: Backend Tests ──────────────────────────────────────────
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          pip install -e ".[dev]"
+
+      - name: Run backend tests
+        working-directory: backend
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+        run: |
+          pytest -v --tb=short
+
+  # ── Job 3: Frontend Lint & TypeCheck ──────────────────────────────
+  frontend-lint:
+    name: Frontend Lint & TypeCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: src/slabai/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src/slabai
+        run: npm ci
+
+      - name: Lint (next lint)
+        working-directory: src/slabai
+        run: npm run lint
+
+      - name: TypeCheck (tsc --noEmit)
+        working-directory: src/slabai
+        run: npm run typecheck
+
+  # ── Job 4: Frontend Tests ──────────────────────────────────────────
+  frontend-test:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: src/slabai/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src/slabai
+        run: npm ci
+
+      - name: Run unit tests (vitest)
+        working-directory: src/slabai
+        run: npm test
+
+  # ── Job 5: Frontend Build ──────────────────────────────────────────
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    needs: [frontend-lint, frontend-test]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: src/slabai/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src/slabai
+        run: npm ci
+
+      - name: Build (next build)
+        working-directory: src/slabai
+        run: npm run build
+
+  # ── Job 6: Docker Build ───────────────────────────────────────────
+  docker-build:
+    name: Docker Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend Docker
+        run: docker build -t slabai-backend:ci -f backend/Dockerfile backend/
+
+      - name: Build frontend Docker
+        run: docker build -t slabai-frontend:ci -f src/slabai/Dockerfile src/slabai/
+
+  # ── Job 7: Summary ─────────────────────────────────────────────────
+  summary:
+    name: Summary
+    runs-on: ubuntu-latest
+    needs: [lint-python, backend-test, frontend-lint, frontend-test, frontend-build, docker-build]
+    if: always()
+    steps:
+      - name: Check all jobs
+        run: |
+          echo "=== CI Summary ==="
+          echo "lint-python:      ${{ needs.lint-python.result }}"
+          echo "backend-test:     ${{ needs.backend-test.result }}"
+          echo "frontend-lint:    ${{ needs.frontend-lint.result }}"
+          echo "frontend-test:    ${{ needs.frontend-test.result }}"
+          echo "frontend-build:   ${{ needs.frontend-build.result }}"
+          echo "docker-build:     ${{ needs.docker-build.result }}"
+
+          if [[ "${{ needs.lint-python.result }}"    != "success" ||
+                "${{ needs.backend-test.result }}"   != "success" ||
+                "${{ needs.frontend-lint.result }}"  != "success" ||
+                "${{ needs.frontend-test.result }}"  != "success" ||
+                "${{ needs.frontend-build.result }}" != "success" ||
+                "${{ needs.docker-build.result }}"   != "success" ]]; then
+            echo "FAILED"
+            exit 1
+          fi
+          echo "All checks passed!"
