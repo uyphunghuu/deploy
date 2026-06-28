@@ -66,8 +66,5 @@ async def read_calendar(
         )
         for item in activities
     )
-    events.sort(key=lambda event: (
-        event.date.date() if isinstance(event.date, datetime) else event.date,
-        event.title
-    ))
+    events.sort(key=lambda event: (event.date.date() if isinstance(event.date, datetime) else event.date, event.title))
     return CalendarResponse(range={"from": date_from, "to": date_to}, events=events)

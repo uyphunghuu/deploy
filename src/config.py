@@ -9,7 +9,9 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
 # Arize Phoenix Config
 PHOENIX_PROJECT_NAME = os.getenv("PHOENIX_PROJECT_NAME", "phoenix-demo-agent")
-PHOENIX_COLLECTOR_ENDPOINT = os.getenv("PHOENIX_COLLECTOR_ENDPOINT", "http://localhost:6006/v1/traces")
+PHOENIX_COLLECTOR_ENDPOINT = os.getenv(
+    "PHOENIX_COLLECTOR_ENDPOINT", "http://localhost:6006/v1/traces"
+)
 PHOENIX_API_KEY = os.getenv("PHOENIX_API_KEY", "")
 
 # Print config status for feedback (excluding sensitive keys)

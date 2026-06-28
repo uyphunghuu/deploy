@@ -89,28 +89,17 @@ class GeminiChatProvider:
             if msg.role == "system":
                 system_parts.append({"text": msg.content})
             elif msg.role == "assistant":
-                contents.append({
-                    "role": "model",
-                    "parts": [{"text": msg.content}]
-                })
+                contents.append({"role": "model", "parts": [{"text": msg.content}]})
             else:
-                contents.append({
-                    "role": "user",
-                    "parts": [{"text": msg.content}]
-                })
+                contents.append({"role": "user", "parts": [{"text": msg.content}]})
 
-        payload = {
-            "contents": contents,
-            "generationConfig": {
-                "temperature": 0.2
-            }
-        }
+        payload = {"contents": contents, "generationConfig": {"temperature": 0.2}}
         if system_parts:
-            payload["systemInstruction"] = {
-                "parts": system_parts
-            }
+            payload["systemInstruction"] = {"parts": system_parts}
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self._model}:generateContent?key={self._api_key}"
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/{self._model}:generateContent?key={self._api_key}"
+        )
 
         last_error: Exception | None = None
         for _ in range(self._max_attempts):
